@@ -1,7 +1,7 @@
 package domain.exception;
 
-public class FileNotReadableException extends RuntimeException {
-    public FileNotReadableException(String message) {
+public class FileNotFoundException extends RuntimeException {
+    public FileNotFoundException(String message) {
         super(message);
     }
 }

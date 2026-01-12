@@ -1,6 +1,7 @@
 package application;
 import domain.repository.FileRepository;
 import infrastructures.filesystem.LocalFileRepository;
+import domain.exception.*;
 
 public class FileService {
     private final FileRepository repository;

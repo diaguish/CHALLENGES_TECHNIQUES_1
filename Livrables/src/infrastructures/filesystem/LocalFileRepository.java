@@ -1,16 +1,13 @@
 package infrastructures.filesystem;
-<<<<<<< HEAD
 import domain.exception.FileAlreadyExistsException;
 import domain.exception.FileNotFoundException;
 import domain.exception.FileNotReadableException;
-import domain.repository.UnknowException;
-=======
+import domain.exception.UnknowException;
 import domain.repository.FileRepository;
->>>>>>> it1-cli-navigation
 
-public class LocalFileRepository implements FileRepository throws FileAlreadyExistsException, FileNotFoundException, IllegalArgumentException, UnknowException {
+public class LocalFileRepository implements FileRepository {
     @Override
-    public void create(String filename) {
+    public void create(String filename) throws FileAlreadyExistsException, FileNotFoundException, IllegalArgumentException, UnknowException {
         if(java.nio.file.Files.exists(java.nio.file.Paths.get(filename))) {
             throw new FileAlreadyExistsException("File already exists: " + filename);
         }
