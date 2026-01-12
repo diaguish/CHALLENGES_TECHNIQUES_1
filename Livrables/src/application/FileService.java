@@ -44,4 +44,17 @@ public class FileService {
             return "Unknown error: " + e.getMessage();
         }
     }
+
+    public String createRepository(String directoryName) {
+        try {
+            repository.createRepository(directoryName);
+            return "Repository created successfully";
+        } catch (FileAlreadyExistsException e) {
+            return "Cannot create repository: " + e.getMessage();
+        } catch (IllegalArgumentException e) {
+            return "Invalid directory name: " + e.getMessage();
+        } catch (UnknowException e) {
+            return "Unknown error: " + e.getMessage();
+        }
+    }
 }

@@ -57,4 +57,19 @@ public class LocalFileRepository implements FileRepository throws FileAlreadyExi
             throw new UnknowException("Unknown error while reading file: " + filename);
         }
     }
+
+    @Override
+    public void createRepository(String directoryName) throws IllegalArgumentException, UnknowException, FileAlreadyExistsException {
+        if(directoryName == null || directoryName.trim().isEmpty()) {
+            throw new IllegalArgumentException("Directory name cannot be null or empty");
+        }
+        if(java.nio.file.Files.exists(java.nio.file.Paths.get(directoryName))) {
+            throw new FileAlreadyExistsException("Directory already exists: " + directoryName);
+        }
+        try {
+            java.nio.file.Files.createDirectory(java.nio.file.Paths.get(directoryName));
+        } catch (java.io.IOException e) {
+            throw new UnknowException("Unknown error while creating directory: " + directoryName);
+        }
+    }
 }
