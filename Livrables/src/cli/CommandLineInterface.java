@@ -1,3 +1,4 @@
+package cli;
 public class CommandLineInterface {
 
     private final FileService fileService;

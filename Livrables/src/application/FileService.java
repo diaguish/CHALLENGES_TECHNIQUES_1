@@ -6,6 +6,10 @@ public class FileService {
     }
     
     public void createFile(String filename) {
-    // logique métier à implémenter
+        try {
+            repository.create(filename);
+        } catch (FileAlreadyExistsException e) {
+            throw new FileAccessException("Cannot create file: " + e.getMessage());
+        }
     }
 }
