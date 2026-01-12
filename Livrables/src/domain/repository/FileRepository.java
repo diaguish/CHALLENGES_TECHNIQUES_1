@@ -1,6 +1,6 @@
 package domain.repository;
 
-public class FileRepository {
+public interface FileRepository {
     void create(String filename);
     void createRepository(String directoryName);
     void delete(String filename);

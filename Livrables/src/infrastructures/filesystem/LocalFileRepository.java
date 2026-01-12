@@ -1,8 +1,12 @@
 package infrastructures.filesystem;
+<<<<<<< HEAD
 import domain.exception.FileAlreadyExistsException;
 import domain.exception.FileNotFoundException;
 import domain.exception.FileNotReadableException;
 import domain.repository.UnknowException;
+=======
+import domain.repository.FileRepository;
+>>>>>>> it1-cli-navigation
 
 public class LocalFileRepository implements FileRepository throws FileAlreadyExistsException, FileNotFoundException, IllegalArgumentException, UnknowException {
     @Override
