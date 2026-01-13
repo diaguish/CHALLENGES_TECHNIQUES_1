@@ -66,6 +66,17 @@ public class CommandLineInterface {
                     display = fileService.createRepository(context.getCurrent(), dirName);
                     break;
 
+                case "cd":
+                    System.out.print("Entrez le chemin du répertoire: ");
+                    String path = scanner.nextLine().trim();
+                    String result = context.changeDirectory(path);
+                    if (result.isEmpty()) {
+                        display = "Changement de répertoire réussi.";
+                    } else {
+                        display = result;
+                    }
+                    break;
+
                 case "exit":
                     System.out.println("Au revoir.");
                     return; // ou break de ta boucle principale

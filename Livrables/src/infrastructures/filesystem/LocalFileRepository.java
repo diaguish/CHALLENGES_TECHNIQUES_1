@@ -95,4 +95,9 @@ public class LocalFileRepository implements FileRepository {
             throw new UnknowException("Unknown error while listing files in directory: " + directoryName.toString());
         }
     }
+
+    @Override
+    public Boolean isDirectory(Path path) {
+        return Files.isDirectory(path);
+    }
 }

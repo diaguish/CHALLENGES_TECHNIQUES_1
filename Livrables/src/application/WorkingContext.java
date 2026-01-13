@@ -4,11 +4,14 @@ import domain.exception.FileAccessException;
 
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import infrastructures.filesystem.LocalFileRepository;
+
 
 public class WorkingContext {
 
     private final Path root;
     private Path current;
+    private LocalFileRepository fileRepository = new LocalFileRepository();
 
     public WorkingContext(String rootDirectory) {
         this.root = Paths.get(rootDirectory).toAbsolutePath().normalize();
@@ -35,7 +38,12 @@ public class WorkingContext {
 //et empêche absolument de sortir du dossier autorisé (root).
 
 
-    public void moveTo(Path newPath) {
+    public String changeDirectory(String input) {
+        final Path newPath = resolve(input);
+        if (!fileRepository.isDirectory(newPath)) {
+            return "Le chemin spécifié n'est pas un répertoire.";
+        }
         this.current = newPath;
+        return "Changement de répertoire réussi.";
     }
 }
