@@ -14,11 +14,12 @@ Développement itératif :
 ## Compilation
 Depuis le dossier `Livrables` :
 ```bash
-javac -d ./bin/ ./src/Main.java ./src/application/*.java ./src/cli/*.java ./src/domain/exception/*.java ./src/domain/repository/*.java ./src/domain/model/*.java ./src/infrastructures/filesystem/*.java
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java")
+
 
 Exécution
 ```bash
-java -cp bin Main
+java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main
 ```
 ## Commandes disponibles (Itération 1)
 
