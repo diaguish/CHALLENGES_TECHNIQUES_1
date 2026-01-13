@@ -12,7 +12,6 @@ public class Journalisation {
 
     private static final String TABLE_NAME = "journalisation";
     private static final String COLUMN_ID = "id";
-    private static final String COLUMN_ACTION_ID = "action_id";
     private static final String COLUMN_USER = "user";
     private static final String COLUMN_DATE = "date";
     private static final String COLUMN_ACTION_TYPE = "action_type";
@@ -39,7 +38,6 @@ public class Journalisation {
     private void initializeTable() throws SQLException {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_ACTION_ID + " INTEGER NOT NULL, " +
                 COLUMN_USER + " TEXT NOT NULL, " +
                 COLUMN_DATE + " DATETIME NOT NULL, " +
                 COLUMN_ACTION_TYPE + " TEXT NOT NULL, " +
@@ -51,17 +49,14 @@ public class Journalisation {
 
         private void initializeTableWithRetry(String createTableSQL, int attempt) throws SQLException {
         if (attempt > 3) {
-            System.err.println("Error initializing table: Maximum retry attempts reached");
-            return;
+            throws new SQLException("Table initialization failed: Timeout after multiple attempts");
         }
 
         try {
             Connection connection = databaseConnection.getConnection();
             Statement statement = connection.createStatement();
             statement.execute(createTableSQL);
-            System.out.println("Table '" + TABLE_NAME + "' initialized successfully");
         } catch (SQLTimeoutException e) {
-            System.err.println("Timeout occurred, retrying initialization (attempt " + (attempt + 1) + "/3): " + e.getMessage());
             initializeTableWithRetry(createTableSQL, attempt + 1);
         }
     }
@@ -77,7 +72,6 @@ public class Journalisation {
      */
     public int createLog(int actionId, String user, String actionType, String file) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +
-                COLUMN_ACTION_ID + ", " +
                 COLUMN_USER + ", " +
                 COLUMN_DATE + ", " +
                 COLUMN_ACTION_TYPE + ", " +
@@ -88,31 +82,27 @@ public class Journalisation {
 
     private int createLogWithRetry(String insertSQL, int actionId, String user, String actionType, String file, int attempt) throws SQLException {
         if (attempt > 3) {
-            System.err.println("Error creating journalisation entry: Maximum retry attempts reached");
-            return -1;
+            throw new SQLException("Log creation failed: Timeout after multiple attempts");
         }
 
         try {
             Connection connection = databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
 
-            preparedStatement.setInt(1, actionId);
-            preparedStatement.setString(2, user);
-            preparedStatement.setString(3, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
-            preparedStatement.setString(4, actionType);
-            preparedStatement.setString(5, file);
+            preparedStatement.setString(1, user);
+            preparedStatement.setString(2, LocalDateTime.now().format(DateTimeFormatter.ISO_LOCAL_DATE_TIME));
+            preparedStatement.setString(3, actionType);
+            preparedStatement.setString(4, file);
 
             preparedStatement.executeUpdate();
 
             try (ResultSet generatedKeys = preparedStatement.getGeneratedKeys()) {
                 if (generatedKeys.next()) {
                     int id = generatedKeys.getInt(1);
-                    System.out.println("Journalisation entry created with id: " + id);
                     return id;
                 }
             }
         } catch (SQLTimeoutException e) {
-            System.err.println("Timeout occurred, retrying creation (attempt " + (attempt + 1) + "/3): " + e.getMessage());
             return createLogWithRetry(insertSQL, actionId, user, actionType, file, attempt + 1);
         }
     }
@@ -123,8 +113,15 @@ public class Journalisation {
      * @param id the entry id
      * @return a Map containing the entry data, or null if not found
      */
-    public Map<String, Object> getLogById(int id) {
+    public Map<String, Object> getLogById(int id) throws SQLException {
         String selectSQL = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = ?";
+        return getLogByIdWithRetry(selectSQL, id, 0);
+    }
+
+    private Map<String, Object> getLogByIdWithRetry(String selectSQL, int id, int attempt) throws SQLException {
+        if (attempt > 3) {
+            throw new SQLException("Log retrieval failed: Timeout after multiple attempts");
+        }
 
         try {
             Connection connection = databaseConnection.getConnection();
@@ -135,34 +132,11 @@ public class Journalisation {
             if (resultSet.next()) {
                 return mapResultSetToMap(resultSet);
             }
-        } catch (SQLException e) {
-            System.err.println("Error retrieving journalisation entry: " + e.getMessage());
-            e.printStackTrace();
+            return null;
+        } catch (SQLTimeoutException e) {
+            return getLogByIdWithRetry(selectSQL, id, attempt + 1);
         }
     }
-
-    /**
-     * Retrieves all journalisation entries (READ)
-     *
-     * @return a list of Maps containing the data of each entry
-     */
-    public List<Map<String, Object>> getAllLogs() {
-        List<Map<String, Object>> logs = new ArrayList<>();
-        String selectSQL = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_DATE + " DESC";
-
-        try {
-            Connection connection = databaseConnection.getConnection();
-            Statement statement = connection.createStatement();
-            ResultSet resultSet = statement.executeQuery(selectSQL);
-
-            while (resultSet.next()) {
-                logs.add(mapResultSetToMap(resultSet));
-            }
-            return logs;
-        } catch (SQLException e) {
-            System.err.println("Error retrieving journalisation entries: " + e.getMessage());
-            e.printStackTrace();
-        }
     }
 
     /**
@@ -209,8 +183,15 @@ public class Journalisation {
      * @param id the id of the entry to delete
      * @return true if the deletion succeeded, false otherwise
      */
-    public boolean deleteLog(int id) {
+    public boolean deleteLog(int id) throws SQLException {
         String deleteSQL = "DELETE FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = ?";
+        return deleteLogWithRetry(deleteSQL, id, 0);
+    }
+
+    private boolean deleteLogWithRetry(String deleteSQL, int id, int attempt) throws SQLException {
+        if (attempt > 3) {
+            throw new SQLException("Log deletion failed: Timeout after multiple attempts");
+        }
 
         try {
             Connection connection = databaseConnection.getConnection();
@@ -220,12 +201,11 @@ public class Journalisation {
 
             int rowsAffected = preparedStatement.executeUpdate();
             if (rowsAffected > 0) {
-                System.out.println("Journalisation entry deleted with id: " + id);
                 return true;
             }
-        } catch (SQLException e) {
-            System.err.println("Error deleting journalisation entry: " + e.getMessage());
-            e.printStackTrace();
+            return false;
+        } catch (SQLTimeoutException e) {
+            return deleteLogWithRetry(deleteSQL, id, attempt + 1);
         }
     }
 
@@ -246,3 +226,4 @@ public class Journalisation {
         map.put(COLUMN_FILE, resultSet.getString(COLUMN_FILE));
         return map;
     }
+}
