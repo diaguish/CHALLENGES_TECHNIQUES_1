@@ -20,12 +20,12 @@ public class Journalisation {
     private DatabaseConnection databaseConnection;
     private static Journalisation instance;
 
-    private Journalisation() {
+    private Journalisation() throws SQLException {
         this.databaseConnection = DatabaseConnection.getInstance();
         initializeTable();
     }
 
-    public static synchronized Journalisation getInstance() {
+    public static synchronized Journalisation getInstance() throws SQLException {
         if (instance == null) {
             instance = new Journalisation();
         }
@@ -45,11 +45,11 @@ public class Journalisation {
                 ")";
 
         initializeTableWithRetry(createTableSQL, 0);
-        }
+    }
 
-        private void initializeTableWithRetry(String createTableSQL, int attempt) throws SQLException {
+    private void initializeTableWithRetry(String createTableSQL, int attempt) throws SQLException {
         if (attempt > 3) {
-            throws new SQLException("Table initialization failed: Timeout after multiple attempts");
+            throw new SQLException("Table initialization failed: Timeout after multiple attempts");
         }
 
         try {
@@ -70,17 +70,17 @@ public class Journalisation {
      * @param file       the path of the affected file
      * @return the id of the created entry, or -1 if an error occurs
      */
-    public int createLog(int actionId, String user, String actionType, String file) throws SQLException {
+    public int createLog(String user, String actionType, String file) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +
                 COLUMN_USER + ", " +
                 COLUMN_DATE + ", " +
                 COLUMN_ACTION_TYPE + ", " +
-                COLUMN_FILE + ") VALUES (?, ?, ?, ?, ?)";
+                COLUMN_FILE + ") VALUES (?, ?, ?, ?)";
         
-        return createLogWithRetry(insertSQL, actionId, user, actionType, file, 0);
+        return createLogWithRetry(insertSQL, user, actionType, file, 0);
     }
 
-    private int createLogWithRetry(String insertSQL, int actionId, String user, String actionType, String file, int attempt) throws SQLException {
+    private int createLogWithRetry(String insertSQL, String user, String actionType, String file, int attempt) throws SQLException {
         if (attempt > 3) {
             throw new SQLException("Log creation failed: Timeout after multiple attempts");
         }
@@ -102,8 +102,9 @@ public class Journalisation {
                     return id;
                 }
             }
+            throw new SQLException("Creating log failed, no ID obtained.");
         } catch (SQLTimeoutException e) {
-            return createLogWithRetry(insertSQL, actionId, user, actionType, file, attempt + 1);
+            return createLogWithRetry(insertSQL, user, actionType, file, attempt + 1);
         }
     }
 
@@ -136,7 +137,6 @@ public class Journalisation {
         } catch (SQLTimeoutException e) {
             return getLogByIdWithRetry(selectSQL, id, attempt + 1);
         }
-    }
     }
 
     /**
@@ -219,7 +219,6 @@ public class Journalisation {
     private Map<String, Object> mapResultSetToMap(ResultSet resultSet) throws SQLException {
         Map<String, Object> map = new HashMap<>();
         map.put(COLUMN_ID, resultSet.getInt(COLUMN_ID));
-        map.put(COLUMN_ACTION_ID, resultSet.getInt(COLUMN_ACTION_ID));
         map.put(COLUMN_USER, resultSet.getString(COLUMN_USER));
         map.put(COLUMN_DATE, resultSet.getString(COLUMN_DATE));
         map.put(COLUMN_ACTION_TYPE, resultSet.getString(COLUMN_ACTION_TYPE));

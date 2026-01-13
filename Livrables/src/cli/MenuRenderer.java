@@ -2,6 +2,7 @@
 package cli;
 import application.FileService;
 import java.nio.file.Path;
+import java.sql.SQLException;
 public class MenuRenderer {
     /**
      * Singleton class to create message to the Interface
@@ -9,11 +10,11 @@ public class MenuRenderer {
     private static MenuRenderer instance;
     private FileService fileService;
 
-    private MenuRenderer() {
+    private MenuRenderer() throws SQLException {
         this.fileService = FileService.getInstance();
     }
 
-    public static synchronized MenuRenderer getInstance() {
+    public static synchronized MenuRenderer getInstance() throws SQLException {
         if (instance == null) {
             instance = new MenuRenderer();
         }

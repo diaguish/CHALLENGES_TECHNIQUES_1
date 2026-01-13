@@ -4,6 +4,7 @@ import infrastructures.filesystem.LocalFileRepository;
 import domain.exception.*;
 import java.nio.file.Path;
 import infrastructures.database.Journalisation;
+import java.sql.SQLException;
 
 public class FileService {
     /**
@@ -18,7 +19,7 @@ public class FileService {
         this.journalisation = Journalisation.getInstance();
     }
     
-    public static synchronized FileService getInstance() {
+    public static synchronized FileService getInstance() throws SQLException {
         if (instance == null) {
             instance = new FileService();
         }
@@ -34,12 +35,14 @@ public class FileService {
          */
         try {
             repository.create(directory, filename);
-            journalisation.createLog(0, "system", "CREATE", directory.resolve(filename).toString());
+            journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid filename: " + e.getMessage();
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
@@ -54,11 +57,14 @@ public class FileService {
         */
         try {
             repository.delete(directory, filename);
+            journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
             return "File deleted successfully";
         } catch (FileNotFoundException e) {
             return "Cannot delete file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid filename: " + e.getMessage();
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
@@ -72,13 +78,17 @@ public class FileService {
         * return the content of the file or an error message
         */
         try {
-            return repository.read(directory, filename);
+            String ret = repository.read(directory, filename);
+            journalisation.createLog("system", "READ", directory.resolve(filename).toString());
+            return ret;
         } catch (FileNotFoundException e) {
             return "Cannot read file: " + e.getMessage();
         } catch (FileNotReadableException e) {
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid filename: " + e.getMessage();
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
@@ -93,11 +103,14 @@ public class FileService {
         */
         try {
             repository.createRepository(directory, directoryName);
+            journalisation.createLog("system", "CREATE_REPO", directory.resolve(directoryName).toString());
             return "Repository created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create repository: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid directory name: " + e.getMessage();
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
@@ -110,7 +123,11 @@ public class FileService {
         * return a formatted string of file names or an error message
         */
         try {
-            return getInstance().repository.listFiles(directoryPath);
+            String ret = getInstance().repository.listFiles(directoryPath);
+            journalisation.createLog("system", "LIST_FILES", directoryPath.toString());
+            return ret;
+        }catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {
@@ -127,13 +144,17 @@ public class FileService {
         * return success or error message
         */
         try {
-            return repository.update(directory, filename, newContent);
+            String ret = repository.update(directory, filename, newContent);
+            journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
+            return ret;
         } catch (FileNotFoundException e) {
             return "Cannot update file: " + e.getMessage();
         } catch (FileNotReadableException e) {
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid filename: " + e.getMessage();
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
