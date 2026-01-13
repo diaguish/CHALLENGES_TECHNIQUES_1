@@ -84,4 +84,7 @@ public class WorkingContext {
             return "Chemin invalide: " + e.getMessage();
         }
     }
+        public Path getRoot() {
+            return root;
+        }
 }
