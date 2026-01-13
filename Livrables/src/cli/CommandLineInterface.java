@@ -14,7 +14,12 @@ public class CommandLineInterface {
         this.context = new WorkingContext("root_app"); // define the root directory
         this.scanner = new Scanner(System.in);
         this.MenuRenderer = MenuRenderer.getInstance();
-        this.fileService = FileService.getInstance();
+        try {
+            this.fileService = FileService.getInstance();
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'initialisation de la base de données: " + e.getMessage());
+            System.exit(1);
+        }
     }
     
     public void start() {

@@ -12,13 +12,9 @@ public class DatabaseConnection {
     private static final String DATABASE_NAME = "db_challenge_technique.db";
     private static final String DATABASE_URL = "jdbc:sqlite:" + DATABASE_NAME;
 
-    private DatabaseConnection() {
+    private DatabaseConnection() throws SQLException {
         // créer une table pour tester la connexion
-        try {
-            getConnection().createStatement().execute("CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY)");
-        } catch (SQLException e) {
-            e.printStackTrace();
-        }
+        getConnection().createStatement().execute("CREATE TABLE IF NOT EXISTS test_table (id INTEGER PRIMARY KEY)");
     }
 
     public static synchronized DatabaseConnection getInstance() {

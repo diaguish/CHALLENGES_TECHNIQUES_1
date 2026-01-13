@@ -19,10 +19,18 @@ public class Journalisation {
     private static final String COLUMN_FILE = "file";
 
     private DatabaseConnection databaseConnection;
+    private static Journalisation instance;
 
-    public Journalisation() {
+    private Journalisation() {
         this.databaseConnection = DatabaseConnection.getInstance();
         initializeTable();
+    }
+
+    public static synchronized Journalisation getInstance() {
+        if (instance == null) {
+            instance = new Journalisation();
+        }
+        return instance;
     }
 
     /**
@@ -38,13 +46,13 @@ public class Journalisation {
                 COLUMN_FILE + " TEXT NOT NULL" +
                 ")";
 
-        try (Connection connection = databaseConnection.getConnection();
-             Statement statement = connection.createStatement()) {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            Statement statement = connection.createStatement();
             statement.execute(createTableSQL);
             System.out.println("Table '" + TABLE_NAME + "' initialized successfully");
         } catch (SQLException e) {
-            System.err.println("Error creating journalisation table: " + e.getMessage());
-            e.printStackTrace();
+            
         }
     }
 
@@ -65,8 +73,9 @@ public class Journalisation {
                 COLUMN_ACTION_TYPE + ", " +
                 COLUMN_FILE + ") VALUES (?, ?, ?, ?, ?)";
 
-        try (Connection connection = databaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS)) {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setInt(1, actionId);
             preparedStatement.setString(2, user);
@@ -87,7 +96,6 @@ public class Journalisation {
             System.err.println("Error creating journalisation entry: " + e.getMessage());
             e.printStackTrace();
         }
-        return -1;
     }
 
     /**
@@ -99,21 +107,19 @@ public class Journalisation {
     public Map<String, Object> getLogById(int id) {
         String selectSQL = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = ?";
 
-        try (Connection connection = databaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(selectSQL)) {
-
+        try {
+            Connection connection = databaseConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(selectSQL);
             preparedStatement.setInt(1, id);
 
-            try (ResultSet resultSet = preparedStatement.executeQuery()) {
-                if (resultSet.next()) {
-                    return mapResultSetToMap(resultSet);
-                }
+            ResultSet resultSet = preparedStatement.executeQuery();
+            if (resultSet.next()) {
+                return mapResultSetToMap(resultSet);
             }
         } catch (SQLException e) {
             System.err.println("Error retrieving journalisation entry: " + e.getMessage());
             e.printStackTrace();
         }
-        return null;
     }
 
     /**
@@ -125,18 +131,19 @@ public class Journalisation {
         List<Map<String, Object>> logs = new ArrayList<>();
         String selectSQL = "SELECT * FROM " + TABLE_NAME + " ORDER BY " + COLUMN_DATE + " DESC";
 
-        try (Connection connection = databaseConnection.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery(selectSQL)) {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            Statement statement = connection.createStatement();
+            ResultSet resultSet = statement.executeQuery(selectSQL);
 
             while (resultSet.next()) {
                 logs.add(mapResultSetToMap(resultSet));
             }
+            return logs;
         } catch (SQLException e) {
             System.err.println("Error retrieving journalisation entries: " + e.getMessage());
             e.printStackTrace();
         }
-        return logs;
     }
 
     /**
@@ -155,8 +162,9 @@ public class Journalisation {
                 COLUMN_FILE + " = ?, " +
                 COLUMN_DATE + " = ? WHERE " + COLUMN_ID + " = ?";
 
-        try (Connection connection = databaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(updateSQL)) {
+        try {}
+            Connection connection = databaseConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(updateSQL);
 
             preparedStatement.setString(1, user);
             preparedStatement.setString(2, actionType);
@@ -173,7 +181,6 @@ public class Journalisation {
             System.err.println("Error updating journalisation entry: " + e.getMessage());
             e.printStackTrace();
         }
-        return false;
     }
 
     /**
@@ -185,8 +192,9 @@ public class Journalisation {
     public boolean deleteLog(int id) {
         String deleteSQL = "DELETE FROM " + TABLE_NAME + " WHERE " + COLUMN_ID + " = ?";
 
-        try (Connection connection = databaseConnection.getConnection();
-             PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL)) {
+        try {
+            Connection connection = databaseConnection.getConnection();
+            PreparedStatement preparedStatement = connection.prepareStatement(deleteSQL);
 
             preparedStatement.setInt(1, id);
 
@@ -199,7 +207,6 @@ public class Journalisation {
             System.err.println("Error deleting journalisation entry: " + e.getMessage());
             e.printStackTrace();
         }
-        return false;
     }
 
     /**
@@ -219,25 +226,3 @@ public class Journalisation {
         map.put(COLUMN_FILE, resultSet.getString(COLUMN_FILE));
         return map;
     }
-
-    /**
-     * Prints all journalisation entries
-     */
-    public void printAllLogs() {
-        List<Map<String, Object>> logs = getAllLogs();
-        if (logs.isEmpty()) {
-            System.out.println("No journalisation entries found.");
-            return;
-        }
-
-        System.out.println("\n=== JOURNALISATION ===");
-        for (Map<String, Object> log : logs) {
-            System.out.println("ID: " + log.get(COLUMN_ID) +
-                    " | User: " + log.get(COLUMN_USER) +
-                    " | Date: " + log.get(COLUMN_DATE) +
-                    " | Action: " + log.get(COLUMN_ACTION_TYPE) +
-                    " | File: " + log.get(COLUMN_FILE));
-        }
-        System.out.println("====================\n");
-    }
-}

@@ -11,9 +11,11 @@ public class FileService {
      */
     private static FileService instance;
     private final FileRepository repository;
+    private Journalisation journalisation;
     
-    private FileService() {
+    private FileService() throws SQLException {
         this.repository = new LocalFileRepository();
+        this.journalisation = Journalisation.getInstance();
     }
     
     public static synchronized FileService getInstance() {
@@ -32,7 +34,6 @@ public class FileService {
          */
         try {
             repository.create(directory, filename);
-            Journalisation journalisation = new Journalisation();
             journalisation.createLog(0, "system", "CREATE", directory.resolve(filename).toString());
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
