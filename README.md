@@ -94,3 +94,11 @@ Dans se dossier il n'y a pas vraiment de code, c'est un dossier où tout est dé
 ### Infrastructure
 c'est l'endroit où tout les accée vers l'exterieur sont réèlement fait, l'application appelle ces méthode via le domaine 
 
+
+## Journalisation
+
+Pour chaque action faite sur l'application (CRUD, erreur, ...) je stock :
+La date exacte de l'action
+Quel utilisateur à fait l'action
+Quel est l'action
+Quel fichier est touché par l'action
