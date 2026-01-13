@@ -3,6 +3,9 @@ package cli;
 import application.FileService;
 import java.nio.file.Path;
 public class MenuRenderer {
+    /**
+     * Singleton class to create message to the Interface
+     */
     private static MenuRenderer instance;
     private FileService fileService;
 
@@ -18,12 +21,20 @@ public class MenuRenderer {
     }
 
     public String displayWelcome() {
+        /**
+         * Display the welcome message.
+         * return the welcome string
+         */
         String welcome = "=== Secure File Manager (CLI) ===\n";
         welcome += "Tapez 'help' pour voir les commandes.\n";
         return welcome;
     }
 
     public String displayHelp() {
+        /**
+         * Display the help message.
+         * return the help string
+         */
         String help = "Commandes disponibles :\n";
         help += "  help  - afficher cette aide\n";
         help += "  pwd   - afficher le répertoire courant\n";

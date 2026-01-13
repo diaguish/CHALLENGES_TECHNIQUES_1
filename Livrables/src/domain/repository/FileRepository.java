@@ -13,5 +13,5 @@ public interface FileRepository {
     //void deleteRepository(String directoryName) throws FileNotFoundException, IllegalArgumentException, UnknowException;
     String read(Path directory, String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException;
     String listFiles(Path directoryName) throws IllegalArgumentException, UnknowException;
-    Boolean isDirectory(Path path);
+    Boolean isDirectory(Path path) throws IllegalArgumentException;
 }

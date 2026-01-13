@@ -5,6 +5,9 @@ import domain.exception.*;
 import java.nio.file.Path;
 
 public class FileService {
+    /**
+     * Singleton service class to handle file operations.
+     */
     private static FileService instance;
     private final FileRepository repository;
     
@@ -20,6 +23,12 @@ public class FileService {
     }
     
     public String createFile(Path directory, String filename) {
+        /**
+         * Create a new file in the specified directory.
+         * directory: Path - the path of the directory where the file will be created
+         * filename: String - the name of the file to be created
+         * return success or error message
+         */
         try {
             repository.create(directory, filename);
             return "File created successfully";
@@ -33,6 +42,12 @@ public class FileService {
     }
 
     public String deleteFile(Path directory, String filename) {
+        /**
+        * Delete a file in the specified directory.
+        * directory: Path - the path of the directory where the file is located
+        * filename: String - the name of the file to be deleted
+        * return success or error message
+        */
         try {
             repository.delete(directory, filename);
             return "File deleted successfully";
@@ -46,6 +61,12 @@ public class FileService {
     }
 
     public String readFile(Path directory, String filename) {
+        /**
+        * Read the content of a file in the specified directory.
+        * directory: Path - the path of the directory where the file is located
+        * filename: String - the name of the file to be read
+        * return the content of the file or an error message
+        */
         try {
             return repository.read(directory, filename);
         } catch (FileNotFoundException e) {
@@ -60,6 +81,12 @@ public class FileService {
     }
 
     public String createRepository(Path directory, String directoryName) {
+        /**
+        * Create a new directory in the specified directory.
+        * directory: Path - the path of the directory where the new directory will be created
+        * directoryName: String - the name of the new directory to be created
+        * return success or error message
+        */
         try {
             repository.createRepository(directory, directoryName);
             return "Repository created successfully";
@@ -73,6 +100,11 @@ public class FileService {
     }
 
     public String listFiles(Path directoryPath) {
+        /**
+        * List all files in the specified directory.
+        * directoryPath: Path - the path of the directory to list files from
+        * return a formatted string of file names or an error message
+        */
         try {
             return getInstance().repository.listFiles(directoryPath);
         } catch (IllegalArgumentException e) {

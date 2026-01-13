@@ -11,7 +11,7 @@ public class CommandLineInterface {
     private FileService fileService;
 
     public CommandLineInterface() {
-        this.context = new WorkingContext("root_app"); // root autorisé (à ajuster si besoin)
+        this.context = new WorkingContext("root_app"); // define the root directory
         this.scanner = new Scanner(System.in);
         this.MenuRenderer = MenuRenderer.getInstance();
         this.fileService = FileService.getInstance();
