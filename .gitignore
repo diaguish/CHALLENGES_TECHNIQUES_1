@@ -1,1 +1,10 @@
+<<<<<<< HEAD
 /bin/
+=======
+bin/application/*
+bin/cli/*
+bin/domain/*
+bin/infrastructures/*
+bin/main/*
+bin/*
+>>>>>>> 23dfb658abfb685da807e673c8a3bbdd50d6f8f0
