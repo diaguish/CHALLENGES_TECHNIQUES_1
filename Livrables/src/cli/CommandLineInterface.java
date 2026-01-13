@@ -11,7 +11,7 @@ public class CommandLineInterface {
 
     public CommandLineInterface() {
         this.fileService = new FileService();
-        this.context = new WorkingContext("Livrables"); // root autorisé (à ajuster si besoin)
+        this.context = new WorkingContext("Livrables/root_app"); // root autorisé (à ajuster si besoin)
         this.scanner = new Scanner(System.in);
     }
     
@@ -33,6 +33,9 @@ public class CommandLineInterface {
                 MenuRenderer.displayHelp();
             } else if (cmd.equals("pwd")) {
                 System.out.println(context.pwd());
+            }else if (cmd.equals("ls")) {
+                String filesList = MenuRenderer.displayFiles(context.getCurrent());
+                System.out.println(filesList);
             } else if (cmd.equals("exit")) {
                 System.out.println("Au revoir.");
                 break;

@@ -4,6 +4,11 @@ import domain.exception.FileNotFoundException;
 import domain.exception.FileNotReadableException;
 import domain.exception.UnknowException;
 import domain.repository.FileRepository;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LocalFileRepository implements FileRepository {
     @Override
@@ -71,6 +76,24 @@ public class LocalFileRepository implements FileRepository {
             java.nio.file.Files.createDirectory(java.nio.file.Paths.get(directoryName));
         } catch (java.io.IOException e) {
             throw new UnknowException("Unknown error while creating directory: " + directoryName);
+        }
+    }
+
+    @Override
+    public String listFiles(Path directoryName) throws IllegalArgumentException, UnknowException {
+        if(directoryName == null) {
+            throw new IllegalArgumentException("Directory name cannot be null");
+        }
+        if(!Files.exists(directoryName) || !Files.isDirectory(directoryName)) {
+            throw new IllegalArgumentException("Directory does not exist: " + directoryName.toString());
+        }
+
+        try {
+            List<String> fileNames = new ArrayList<>();
+            Files.list(directoryName).forEach(path -> fileNames.add(path.getFileName().toString()));
+            return String.join("\n", fileNames);
+        } catch (java.io.IOException e) {
+            throw new UnknowException("Unknown error while listing files in directory: " + directoryName.toString());
         }
     }
 }

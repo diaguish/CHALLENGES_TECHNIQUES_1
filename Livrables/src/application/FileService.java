@@ -2,6 +2,7 @@ package application;
 import domain.repository.FileRepository;
 import infrastructures.filesystem.LocalFileRepository;
 import domain.exception.*;
+import java.nio.file.Path;
 
 public class FileService {
     private final FileRepository repository;
@@ -57,6 +58,17 @@ public class FileService {
             return "Cannot create repository: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid directory name: " + e.getMessage();
+        } catch (UnknowException e) {
+            return "Unknown error: " + e.getMessage();
+        }
+    }
+
+    public static String listFiles(Path directoryPath) {
+        FileRepository repo = new LocalFileRepository();
+        try {
+            return repo.listFiles(directoryPath);
+        } catch (IllegalArgumentException e) {
+            return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }

@@ -3,6 +3,7 @@ import domain.exception.FileAlreadyExistsException;
 import domain.exception.FileNotFoundException;  
 import domain.exception.FileNotReadableException;   
 import domain.exception.UnknowException;   
+import java.nio.file.Path;
 
 
 public interface FileRepository {
@@ -11,4 +12,5 @@ public interface FileRepository {
     void delete(String filename) throws FileNotFoundException, IllegalArgumentException, UnknowException;
     //void deleteRepository(String directoryName) throws FileNotFoundException, IllegalArgumentException, UnknowException;
     String read(String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException;
+    String listFiles(Path directoryName) throws IllegalArgumentException, UnknowException;
 }

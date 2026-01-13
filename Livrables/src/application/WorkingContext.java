@@ -27,6 +27,10 @@ public class WorkingContext {
         }
         return resolved;
     }
+
+    public Path getCurrent() {
+        return current;
+    }
 //Elle transforme ce que l’utilisateur tape en un chemin sûr,
 //et empêche absolument de sortir du dossier autorisé (root).
 

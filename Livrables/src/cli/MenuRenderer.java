@@ -1,5 +1,7 @@
 
 package cli;
+import application.FileService;
+import java.nio.file.Path;
 public class MenuRenderer {
 
     public static void displayWelcome() {
@@ -13,4 +15,17 @@ public class MenuRenderer {
         System.out.println("  pwd   - afficher le répertoire courant");
         System.out.println("  exit  - quitter");
     }
+
+    public static String displayFiles(Path currentDirectory) {
+        /**
+        Display the list of files in the current directory.
+        currentDirectory: String - the path of the current directory
+        return the formatted string of files
+        */
+        String ret = "Fichiers dans " + currentDirectory + ":\n";
+        ret += FileService.listFiles(currentDirectory);
+        return ret;
+    
+    }
 }
+
