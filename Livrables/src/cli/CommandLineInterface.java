@@ -11,7 +11,7 @@ public class CommandLineInterface {
 
     public CommandLineInterface() {
         this.fileService = new FileService();
-        this.context = new WorkingContext("Livrables/root_app"); // root autorisé (à ajuster si besoin)
+        this.context = new WorkingContext("root_app"); // root autorisé (à ajuster si besoin)
         this.scanner = new Scanner(System.in);
     }
     
