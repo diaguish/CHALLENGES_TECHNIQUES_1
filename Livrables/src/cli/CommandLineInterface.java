@@ -1,24 +1,26 @@
 package cli;
 import java.util.Scanner;
-import application.FileService;
 import application.WorkingContext;
+import application.FileService;
 
 public class CommandLineInterface {
 
-    private final FileService fileService;
     private final WorkingContext context;
     private final Scanner scanner;
+    private MenuRenderer MenuRenderer;
+    private FileService fileService;
 
     public CommandLineInterface() {
-        this.fileService = new FileService();
-        this.context = new WorkingContext("Livrables"); // root autorisé (à ajuster si besoin)
+        this.context = new WorkingContext("root_app"); // define the root directory
         this.scanner = new Scanner(System.in);
+        this.MenuRenderer = MenuRenderer.getInstance();
+        this.fileService = FileService.getInstance();
     }
     
     public void start() {
         
-    MenuRenderer.displayWelcome();
-    MenuRenderer.displayHelp();
+    System.out.println(this.MenuRenderer.displayWelcome());
+    System.out.println(this.MenuRenderer.displayHelp());
      while (true) {
             System.out.print("sfm:" + context.pwd() + "> ");
             String line = scanner.nextLine().trim();
@@ -28,16 +30,72 @@ public class CommandLineInterface {
             }
 
             String cmd = line.toLowerCase();
+            String display = "";
 
-            if (cmd.equals("help")) {
-                MenuRenderer.displayHelp();
-            } else if (cmd.equals("pwd")) {
-                System.out.println(context.pwd());
-            } else if (cmd.equals("exit")) {
-                System.out.println("Au revoir.");
-                break;
-            } else {
-                System.out.println("Commande inconnue. Tapez 'help'.");
+            switch (cmd) {
+                case "help":
+                    display = MenuRenderer.displayHelp();
+                    break;
+
+                case "pwd":
+                    display = "Répertoire courant: " + context.pwd();
+                    break;
+
+                case "ls":
+                    display = MenuRenderer.displayFiles(context.getCurrent());
+                    break;
+
+                case "create":
+                    System.out.print("Entrez le nom du fichier à créer: ");
+                    display = fileService.createFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "delete":
+                    System.out.print("Entrez le nom du fichier à supprimer: ");
+                    display = fileService.deleteFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "read":
+                    System.out.print("Entrez le nom du fichier à lire: ");
+                    display = fileService.readFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "create_repo":
+                    System.out.print("Entrez le nom du répertoire à créer: ");
+                    String dirName = scanner.nextLine().trim();
+                    display = fileService.createRepository(context.getCurrent(), dirName);
+                    break;
+
+                case "update":
+                    System.out.print("Entrez le nom du fichier à mettre à jour: ");
+                    String filename = scanner.nextLine().trim();
+                    System.out.print("Entrez le nouveau contenu du fichier: ");
+                    String newContent = scanner.nextLine();
+                    display = fileService.updateFile(context.getCurrent(), filename, newContent);
+                    break;
+
+                case "cd":
+                    System.out.print("Entrez le chemin du répertoire (.. pour remonter): ");
+                    String path = scanner.nextLine().trim();
+                    String result = context.changeDirectory(path);
+                    if (result.isEmpty()) {
+                        display = "Changement de répertoire réussi.";
+                    } else {
+                        display = result;
+                    }
+                    break;
+
+                case "exit":
+                    System.out.println("Au revoir.");
+                    return; // ou break de ta boucle principale
+
+                default:
+                    display = "Commande inconnue. Tapez 'help'.";
+            }
+
+
+            if (!display.isEmpty()) {
+                System.out.println(display);
             }
         }
     }
