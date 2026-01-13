@@ -3,6 +3,7 @@ import domain.repository.FileRepository;
 import infrastructures.filesystem.LocalFileRepository;
 import domain.exception.*;
 import java.nio.file.Path;
+import infrastructures.database.Journalisation;
 
 public class FileService {
     /**
@@ -31,6 +32,8 @@ public class FileService {
          */
         try {
             repository.create(directory, filename);
+            Journalisation journalisation = new Journalisation();
+            journalisation.createLog(0, "system", "CREATE", directory.resolve(filename).toString());
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create file: " + e.getMessage();
