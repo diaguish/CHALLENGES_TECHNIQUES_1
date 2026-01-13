@@ -49,12 +49,48 @@ Les messages affichés à l’utilisateur sont clairs et l’application ne s’
 
 ## Architecture du projet
 
-Le projet suit une architecture en couches, inspirée de la Clean Architecture :
+L'application est structurée en 4 modules :
 
-CLI → Application → Domain → Infrastructure
-- `application` : logique métier et services
-- `cli` : interface en ligne de commande
-- `domain` : modèles de données et exceptions
-- `infrastructures` : interaction avec le système de fichiers
-- `Main.java` : point d’entrée de l’application
+### CLI
+Le module CLI (Command Line Interface) est responsable de l'interaction entre l'utilisateur et l'application. Il permet à l'utilisateur d'exécuter des commandes pour gérer des fichiers de manière sécurisée. **Aucun traitement métier n'y est effectué**. Voici les principales classes et fonctionnalités de ce module :
+
+#### CommandLineInterface
+Cette classe gère l'interface en ligne de commande. Elle initialise les services nécessaires, comme `FileService` pour la gestion des fichiers et `WorkingContext` pour maintenir le contexte de travail actuel. La méthode `start()` lance la boucle principale de l'application, où l'utilisateur peut entrer des commandes.
+
+- **Fonctionnalités :**
+    - Affichage d'un message de bienvenue et d'aide via `MenuRenderer`.
+    - Lecture des entrées utilisateur et traitement des commandes.
+    -
+
+#### MenuRenderer
+Cette classe est responsable de l'affichage des messages à l'utilisateur. Elle fournit des méthodes statiques pour afficher le message de bienvenue et l'aide.
+
+### Application
+Le module Application est le cœur de l'application, orchestrant les différentes fonctionnalités et cas d'utilisation. Il interagit avec les modules CLI et Infrastructure(via le Domain).
+
+#### FileService
+Cette classe gère les opérations liées aux fichiers, telles que la création, la suppression et la lecture de fichiers. Elle utilise le module Domaine pour appliquer les règles de gestion et garantir l'intégrité des opérations.
+
+- **Fonctionnalités :**
+    - `createFile(String filename)` : Crée un nouveau fichier avec le nom spécifié.
+    - `deleteFile(String filename)` : Supprime le fichier spécifié.
+    - `readFile(String filename)` : Lit le contenu du fichier spécifié.
+    - `createRepository(String directoryName)` : Crée un nouveau répertoire pour organiser les fichiers.
+
+#### WorkingContext
+Cette classe maintient le contexte de travail actuel de l'utilisateur, en s'assurant qu'il reste dans le répertoire autorisé. Elle transforme les entrées de l'utilisateur en chemins sûrs et gère les déplacements dans le système de fichiers.
+
+- **Fonctionnalités :**
+    - `pwd()` : Affiche le répertoire courant.
+    - `resolve(String input)` : Résout un chemin d'entrée en un chemin sûr.
+    - `moveTo(Path newPath)` : Déplace le contexte de travail vers un nouveau chemin.
+
+Ce module assure que toutes les opérations de fichiers sont effectuées dans un cadre sécurisé, respectant les principes de la triade CIA.
+
+### Domaine
+Définit les entités métier, les règles de gestion et la logique métier fondamentale.
+Dans se dossier il n'y a pas vraiment de code, c'est un dossier où tout est défini, il ne dépend de personne mais l'infrastructure et l'application l'utilise pour comuniquer entre eux
+
+### Infrastructure
+c'est l'endroit où tout les accée vers l'exterieur sont réèlement fait, l'application appelle ces méthode via le domaine 
 
