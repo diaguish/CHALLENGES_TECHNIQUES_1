@@ -17,16 +17,22 @@ public class MenuRenderer {
         return instance;
     }
 
-    public void displayWelcome() {
-        System.out.println("=== Secure File Manager (CLI) ===");
-        System.out.println("Tapez 'help' pour voir les commandes.");
+    public String displayWelcome() {
+        String welcome = "=== Secure File Manager (CLI) ===\n";
+        welcome += "Tapez 'help' pour voir les commandes.\n";
+        return welcome;
     }
 
-    public void displayHelp() {
-        System.out.println("Commandes disponibles :");
-        System.out.println("  help  - afficher cette aide");
-        System.out.println("  pwd   - afficher le répertoire courant");
-        System.out.println("  exit  - quitter");
+    public String displayHelp() {
+        String help = "Commandes disponibles :\n";
+        help += "  help  - afficher cette aide\n";
+        help += "  pwd   - afficher le répertoire courant\n";
+        help += "  ls    - lister les fichiers dans le répertoire courant\n";
+        help += "  create - créer un nouveau fichier\n";
+        help += "  delete - supprimer un fichier\n";
+        help += "  read  - lire le contenu d'un fichier\n";
+        help += "  exit  - quitter\n";
+        return help;
     }
 
     public String displayFiles(Path currentDirectory) {

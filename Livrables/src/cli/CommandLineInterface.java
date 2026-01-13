@@ -19,8 +19,8 @@ public class CommandLineInterface {
     
     public void start() {
         
-    this.MenuRenderer.displayWelcome();
-    this.MenuRenderer.displayHelp();
+    System.out.println(this.MenuRenderer.displayWelcome());
+    System.out.println(this.MenuRenderer.displayHelp());
      while (true) {
             System.out.print("sfm:" + context.pwd() + "> ");
             String line = scanner.nextLine().trim();
@@ -30,34 +30,47 @@ public class CommandLineInterface {
             }
 
             String cmd = line.toLowerCase();
+            String display = "";
 
-            if (cmd.equals("help")) {
-                this.MenuRenderer.displayHelp();
-            } else if (cmd.equals("pwd")) {
-                System.out.println(context.pwd());
-            } else if (cmd.equals("ls")) {
-                String filesList = this.MenuRenderer.displayFiles(context.getCurrent());
-                System.out.println(filesList);
-            } else if (cmd.equals("create")) {
-                System.out.print("Entrez le nom du fichier à créer: ");
-                String filename = scanner.nextLine().trim();
-                String result = fileService.createFile(context.getCurrent(), filename);
-                System.out.println(result);
-            } else if (cmd.equals("delete")) {
-                System.out.print("Entrez le nom du fichier à supprimer: ");
-                String filename = scanner.nextLine().trim();
-                String result = fileService.deleteFile(context.getCurrent(), filename);
-                System.out.println(result);
-            } else if (cmd.equals("read")) {
-                System.out.print("Entrez le nom du fichier à lire: ");
-                String filename = scanner.nextLine().trim();
-                String result = fileService.readFile(context.getCurrent(), filename);
-                System.out.println(result);
-            } else if (cmd.equals("exit")) {
-                System.out.println("Au revoir.");
-                break;
-            } else {
-                System.out.println("Commande inconnue. Tapez 'help'.");
+            switch (cmd) {
+                case "help":
+                    display = MenuRenderer.displayHelp();
+                    break;
+
+                case "pwd":
+                    display = "Répertoire courant: " + context.pwd();
+                    break;
+
+                case "ls":
+                    display = MenuRenderer.displayFiles(context.getCurrent());
+                    break;
+
+                case "create":
+                    System.out.print("Entrez le nom du fichier à créer: ");
+                    display = fileService.createFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "delete":
+                    System.out.print("Entrez le nom du fichier à supprimer: ");
+                    display = fileService.deleteFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "read":
+                    System.out.print("Entrez le nom du fichier à lire: ");
+                    display = fileService.readFile(context.getCurrent(), scanner.nextLine().trim());
+                    break;
+
+                case "exit":
+                    System.out.println("Au revoir.");
+                    return; // ou break de ta boucle principale
+
+                default:
+                    display = "Commande inconnue. Tapez 'help'.";
+            }
+
+
+            if (!display.isEmpty()) {
+                System.out.println(display);
             }
         }
     }
