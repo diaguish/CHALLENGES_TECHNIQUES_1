@@ -5,9 +5,18 @@ import domain.exception.*;
 import java.nio.file.Path;
 
 public class FileService {
+    private static FileService instance;
     private final FileRepository repository;
-    public FileService() {
+    
+    private FileService() {
         this.repository = new LocalFileRepository();
+    }
+    
+    public static synchronized FileService getInstance() {
+        if (instance == null) {
+            instance = new FileService();
+        }
+        return instance;
     }
     
     public String createFile(String filename) {
@@ -63,10 +72,9 @@ public class FileService {
         }
     }
 
-    public static String listFiles(Path directoryPath) {
-        FileRepository repo = new LocalFileRepository();
+    public String listFiles(Path directoryPath) {
         try {
-            return repo.listFiles(directoryPath);
+            return getInstance().repository.listFiles(directoryPath);
         } catch (IllegalArgumentException e) {
             return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {

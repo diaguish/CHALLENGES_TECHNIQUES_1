@@ -1,24 +1,23 @@
 package cli;
 import java.util.Scanner;
-import application.FileService;
 import application.WorkingContext;
 
 public class CommandLineInterface {
 
-    private final FileService fileService;
     private final WorkingContext context;
     private final Scanner scanner;
+    private MenuRenderer MenuRenderer;
 
     public CommandLineInterface() {
-        this.fileService = new FileService();
         this.context = new WorkingContext("root_app"); // root autorisé (à ajuster si besoin)
         this.scanner = new Scanner(System.in);
+        this.MenuRenderer = MenuRenderer.getInstance();
     }
     
     public void start() {
         
-    MenuRenderer.displayWelcome();
-    MenuRenderer.displayHelp();
+    this.MenuRenderer.displayWelcome();
+    this.MenuRenderer.displayHelp();
      while (true) {
             System.out.print("sfm:" + context.pwd() + "> ");
             String line = scanner.nextLine().trim();
@@ -30,11 +29,11 @@ public class CommandLineInterface {
             String cmd = line.toLowerCase();
 
             if (cmd.equals("help")) {
-                MenuRenderer.displayHelp();
+                this.MenuRenderer.displayHelp();
             } else if (cmd.equals("pwd")) {
                 System.out.println(context.pwd());
             }else if (cmd.equals("ls")) {
-                String filesList = MenuRenderer.displayFiles(context.getCurrent());
+                String filesList = this.MenuRenderer.displayFiles(context.getCurrent());
                 System.out.println(filesList);
             } else if (cmd.equals("exit")) {
                 System.out.println("Au revoir.");
