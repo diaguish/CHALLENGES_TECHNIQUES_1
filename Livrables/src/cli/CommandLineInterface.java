@@ -60,6 +60,12 @@ public class CommandLineInterface {
                     display = fileService.readFile(context.getCurrent(), scanner.nextLine().trim());
                     break;
 
+                case "create_repo":
+                    System.out.print("Entrez le nom du répertoire à créer: ");
+                    String dirName = scanner.nextLine().trim();
+                    display = fileService.createRepository(context.getCurrent(), dirName);
+                    break;
+
                 case "exit":
                     System.out.println("Au revoir.");
                     return; // ou break de ta boucle principale

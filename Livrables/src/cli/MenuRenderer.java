@@ -29,6 +29,7 @@ public class MenuRenderer {
         help += "  pwd   - afficher le répertoire courant\n";
         help += "  ls    - lister les fichiers dans le répertoire courant\n";
         help += "  create - créer un nouveau fichier\n";
+        help += "  create_repo - créer un nouveau répertoire\n";
         help += "  delete - supprimer un fichier\n";
         help += "  read  - lire le contenu d'un fichier\n";
         help += "  exit  - quitter\n";
