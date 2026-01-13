@@ -14,4 +14,5 @@ public interface FileRepository {
     String read(Path directory, String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException;
     String listFiles(Path directoryName) throws IllegalArgumentException, UnknowException;
     Boolean isDirectory(Path path) throws IllegalArgumentException;
+    String update(Path directory, String filename, String newContent) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException;
 }

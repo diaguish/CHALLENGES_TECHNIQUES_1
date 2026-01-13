@@ -113,4 +113,25 @@ public class FileService {
             return "Unknown error: " + e.getMessage();
         }
     }
+
+    public String updateFile(Path directory, String filename, String newContent) {
+        /**
+        * Update the content of a file in the specified directory.
+        * directory: Path - the path of the directory where the file is located
+        * filename: String - the name of the file to be updated
+        * newContent: String - the new content to write to the file
+        * return success or error message
+        */
+        try {
+            return repository.update(directory, filename, newContent);
+        } catch (FileNotFoundException e) {
+            return "Cannot update file: " + e.getMessage();
+        } catch (FileNotReadableException e) {
+            return "File not readable: " + e.getMessage();
+        } catch (IllegalArgumentException e) {
+            return "Invalid filename: " + e.getMessage();
+        } catch (UnknowException e) {
+            return "Unknown error: " + e.getMessage();
+        }
+    }
 }

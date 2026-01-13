@@ -66,6 +66,14 @@ public class CommandLineInterface {
                     display = fileService.createRepository(context.getCurrent(), dirName);
                     break;
 
+                case "update":
+                    System.out.print("Entrez le nom du fichier à mettre à jour: ");
+                    String filename = scanner.nextLine().trim();
+                    System.out.print("Entrez le nouveau contenu du fichier: ");
+                    String newContent = scanner.nextLine();
+                    display = fileService.updateFile(context.getCurrent(), filename, newContent);
+                    break;
+
                 case "cd":
                     System.out.print("Entrez le chemin du répertoire (.. pour remonter): ");
                     String path = scanner.nextLine().trim();

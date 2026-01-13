@@ -150,4 +150,36 @@ public class LocalFileRepository implements FileRepository {
         }
         return Files.isDirectory(path);
     }
+
+    @Override
+    public String update(Path directory, String filename, String newContent) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException {
+        /**
+         * Update the content of a file in the specified directory.
+         * directory: Path - the path of the directory where the file is located
+         * filename: String - the name of the file to be updated
+         * newContent: String - the new content to write to the file
+         * return the updated content of the file as a String
+         * throws FileNotFoundException if the file does not exist
+         * throws FileNotReadableException if the file is not readable
+         * throws IllegalArgumentException if the filename is invalid
+         * throws UnknowException for any other errors
+         */
+        if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
+            throw new FileNotFoundException("File not found: " + filename);
+        }
+
+        if(!java.nio.file.Files.isWritable(java.nio.file.Paths.get(directory.toString(), filename))) {
+            throw new FileNotReadableException("File not writable: " + filename);
+        }
+        if(filename == null || filename.trim().isEmpty() || directory == null) {
+            throw new IllegalArgumentException("Filename cannot be null or empty");
+        }
+
+        try {
+            java.nio.file.Files.write(java.nio.file.Paths.get(directory.toString(), filename), newContent.getBytes());
+            return new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(directory.toString(), filename)));
+        } catch (java.io.IOException e) {
+            throw new UnknowException("Unknown error while updating file: " + filename);
+        }
+    }
 }
