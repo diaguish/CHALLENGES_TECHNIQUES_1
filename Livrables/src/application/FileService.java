@@ -19,9 +19,9 @@ public class FileService {
         return instance;
     }
     
-    public String createFile(String filename) {
+    public String createFile(Path directory, String filename) {
         try {
-            repository.create(filename);
+            repository.create(directory, filename);
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create file: " + e.getMessage();
@@ -32,9 +32,9 @@ public class FileService {
         }
     }
 
-    public String deleteFile(String filename) {
+    public String deleteFile(Path directory, String filename) {
         try {
-            repository.delete(filename);
+            repository.delete(directory, filename);
             return "File deleted successfully";
         } catch (FileNotFoundException e) {
             return "Cannot delete file: " + e.getMessage();
@@ -45,9 +45,9 @@ public class FileService {
         }
     }
 
-    public String readFile(String filename) {
+    public String readFile(Path directory, String filename) {
         try {
-            return repository.read(filename);
+            return repository.read(directory, filename);
         } catch (FileNotFoundException e) {
             return "Cannot read file: " + e.getMessage();
         } catch (FileNotReadableException e) {
@@ -59,9 +59,9 @@ public class FileService {
         }
     }
 
-    public String createRepository(String directoryName) {
+    public String createRepository(Path directory, String directoryName) {
         try {
-            repository.createRepository(directoryName);
+            repository.createRepository(directory, directoryName);
             return "Repository created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create repository: " + e.getMessage();

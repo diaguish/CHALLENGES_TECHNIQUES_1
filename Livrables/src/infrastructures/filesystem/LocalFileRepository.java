@@ -12,16 +12,15 @@ import java.util.List;
 
 public class LocalFileRepository implements FileRepository {
     @Override
-    public void create(String filename) throws FileAlreadyExistsException, FileNotFoundException, IllegalArgumentException, UnknowException {
-        if(java.nio.file.Files.exists(java.nio.file.Paths.get(filename))) {
-            throw new FileAlreadyExistsException("File already exists: " + filename);
-        }
-        if(filename == null || filename.trim().isEmpty()) {
+    public void create(Path directory, String filename) throws FileAlreadyExistsException, FileNotFoundException, IllegalArgumentException, UnknowException {
+        if(filename == null || filename.trim().isEmpty() || directory == null) {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
-
+        if(java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
+            throw new FileAlreadyExistsException("File already exists: " + filename);
+        }
         try {
-            java.nio.file.Files.createFile(java.nio.file.Paths.get(filename));
+            java.nio.file.Files.createFile(java.nio.file.Paths.get(directory.toString(), filename));
         } catch (java.io.IOException e) {
             throw new UnknowException("Unknown error while creating file: " + filename);
         }
@@ -29,51 +28,51 @@ public class LocalFileRepository implements FileRepository {
     }
 
     @Override
-    public void delete(String filename) throws FileNotFoundException, IllegalArgumentException, UnknowException {
-        if(!java.nio.file.Files.exists(java.nio.file.Paths.get(filename))) {
+    public void delete(Path directory, String filename) throws FileNotFoundException, IllegalArgumentException, UnknowException {
+        if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotFoundException("File not found: " + filename);
         }
-        if(filename == null || filename.trim().isEmpty()) {
+        if(filename == null || filename.trim().isEmpty() || directory == null) {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
         
         try {
-            java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get(filename));
+            java.nio.file.Files.deleteIfExists(java.nio.file.Paths.get(directory.toString(), filename));
         } catch (java.io.IOException e) {
             throw new UnknowException("Unknown error while deleting file: " + filename);
         }
     }
 
     @Override
-    public String read(String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException {
-        if(!java.nio.file.Files.exists(java.nio.file.Paths.get(filename))) {
+    public String read(Path directory, String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException {
+        if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotFoundException("File not found: " + filename);
         }
 
-        if(!java.nio.file.Files.isReadable(java.nio.file.Paths.get(filename))) {
+        if(!java.nio.file.Files.isReadable(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotReadableException("File not readable: " + filename);
         }
-        if(filename == null || filename.trim().isEmpty()) {
+        if(filename == null || filename.trim().isEmpty() || directory == null) {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
 
         try {
-            return new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(filename)));
+            return new String(java.nio.file.Files.readAllBytes(java.nio.file.Paths.get(directory.toString(), filename)));
         } catch (java.io.IOException e) {
             throw new UnknowException("Unknown error while reading file: " + filename);
         }
     }
 
     @Override
-    public void createRepository(String directoryName) throws IllegalArgumentException, UnknowException, FileAlreadyExistsException {
+    public void createRepository(Path directory, String directoryName) throws IllegalArgumentException, UnknowException, FileAlreadyExistsException {
         if(directoryName == null || directoryName.trim().isEmpty()) {
             throw new IllegalArgumentException("Directory name cannot be null or empty");
         }
-        if(java.nio.file.Files.exists(java.nio.file.Paths.get(directoryName))) {
+        if(java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), directoryName))) {
             throw new FileAlreadyExistsException("Directory already exists: " + directoryName);
         }
         try {
-            java.nio.file.Files.createDirectory(java.nio.file.Paths.get(directoryName));
+            java.nio.file.Files.createDirectory(java.nio.file.Paths.get(directory.toString(), directoryName));
         } catch (java.io.IOException e) {
             throw new UnknowException("Unknown error while creating directory: " + directoryName);
         }
