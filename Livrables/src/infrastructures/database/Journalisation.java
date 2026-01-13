@@ -36,7 +36,7 @@ public class Journalisation {
     /**
      * Initializes the journalisation table if it does not exist
      */
-    private void initializeTable() {
+    private void initializeTable() throws SQLException {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_ACTION_ID + " INTEGER NOT NULL, " +
@@ -46,13 +46,23 @@ public class Journalisation {
                 COLUMN_FILE + " TEXT NOT NULL" +
                 ")";
 
+        initializeTableWithRetry(createTableSQL, 0);
+        }
+
+        private void initializeTableWithRetry(String createTableSQL, int attempt) throws SQLException {
+        if (attempt > 3) {
+            System.err.println("Error initializing table: Maximum retry attempts reached");
+            return;
+        }
+
         try {
             Connection connection = databaseConnection.getConnection();
             Statement statement = connection.createStatement();
             statement.execute(createTableSQL);
             System.out.println("Table '" + TABLE_NAME + "' initialized successfully");
-        } catch (SQLException e) {
-            
+        } catch (SQLTimeoutException e) {
+            System.err.println("Timeout occurred, retrying initialization (attempt " + (attempt + 1) + "/3): " + e.getMessage());
+            initializeTableWithRetry(createTableSQL, attempt + 1);
         }
     }
 
@@ -65,13 +75,22 @@ public class Journalisation {
      * @param file       the path of the affected file
      * @return the id of the created entry, or -1 if an error occurs
      */
-    public int createLog(int actionId, String user, String actionType, String file) {
+    public int createLog(int actionId, String user, String actionType, String file) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +
                 COLUMN_ACTION_ID + ", " +
                 COLUMN_USER + ", " +
                 COLUMN_DATE + ", " +
                 COLUMN_ACTION_TYPE + ", " +
                 COLUMN_FILE + ") VALUES (?, ?, ?, ?, ?)";
+        
+        return createLogWithRetry(insertSQL, actionId, user, actionType, file, 0);
+    }
+
+    private int createLogWithRetry(String insertSQL, int actionId, String user, String actionType, String file, int attempt) throws SQLException {
+        if (attempt > 3) {
+            System.err.println("Error creating journalisation entry: Maximum retry attempts reached");
+            return -1;
+        }
 
         try {
             Connection connection = databaseConnection.getConnection();
@@ -92,9 +111,9 @@ public class Journalisation {
                     return id;
                 }
             }
-        } catch (SQLException e) {
-            System.err.println("Error creating journalisation entry: " + e.getMessage());
-            e.printStackTrace();
+        } catch (SQLTimeoutException e) {
+            System.err.println("Timeout occurred, retrying creation (attempt " + (attempt + 1) + "/3): " + e.getMessage());
+            return createLogWithRetry(insertSQL, actionId, user, actionType, file, attempt + 1);
         }
     }
 
@@ -162,7 +181,7 @@ public class Journalisation {
                 COLUMN_FILE + " = ?, " +
                 COLUMN_DATE + " = ? WHERE " + COLUMN_ID + " = ?";
 
-        try {}
+        try {
             Connection connection = databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(updateSQL);
 
@@ -181,6 +200,7 @@ public class Journalisation {
             System.err.println("Error updating journalisation entry: " + e.getMessage());
             e.printStackTrace();
         }
+        return false;
     }
 
     /**
