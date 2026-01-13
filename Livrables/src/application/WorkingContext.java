@@ -39,6 +39,20 @@ public class WorkingContext {
 
 
     public String changeDirectory(String input) {
+        if (input == null || input.trim().isEmpty()) {
+            return "Le nom du répertoire ne peut pas être vide.";
+        }
+        if (input.equals("/")) {
+            this.current = this.root;
+            return "Changement de répertoire réussi.";
+        }
+        if (input.equals("..")) {
+            if (this.current.equals(this.root)) {
+                return "Vous êtes déjà au répertoire racine.";
+            }
+            this.current = this.current.getParent();
+            return "Changement de répertoire réussi.";
+        }
         final Path newPath = resolve(input);
         if (!fileRepository.isDirectory(newPath)) {
             return "Le chemin spécifié n'est pas un répertoire.";

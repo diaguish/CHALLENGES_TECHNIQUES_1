@@ -67,7 +67,7 @@ public class CommandLineInterface {
                     break;
 
                 case "cd":
-                    System.out.print("Entrez le chemin du répertoire: ");
+                    System.out.print("Entrez le chemin du répertoire (.. pour remonter): ");
                     String path = scanner.nextLine().trim();
                     String result = context.changeDirectory(path);
                     if (result.isEmpty()) {
