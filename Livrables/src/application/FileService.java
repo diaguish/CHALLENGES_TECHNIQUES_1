@@ -257,7 +257,6 @@ public class FileService {
         * newContent: String - the new content to write to the file
         * return success or error message
         */
-<<<<<<< HEAD
         try {
             String ret = repository.update(directory, filename, newContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());

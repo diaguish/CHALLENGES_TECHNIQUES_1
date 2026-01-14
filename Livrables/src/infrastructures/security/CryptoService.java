@@ -1,5 +1,187 @@
 package infrastructures.security;
 
-public class CryptoService {
-    
+import javax.crypto.*;
+import javax.crypto.spec.*;
+import java.util.*;
+import java.nio.ByteBuffer;
+import java.nio.charset.StandardCharsets;
+import java.security.*;
+import java.security.spec.*;
+import java.io.*;
+import java.nio.file.*;
+import domain.model.Encrypt;
+
+public class CryptoService implements Encrypt {
+    private static class ValueUtils {
+        public static final String AESGCM_ALGO = "AES/GCM/NoPadding";
+        public static final int TAG_LENGTH_BIT = 128;
+        public static final int IV_LENGTH_BYTE = 12;
+        public static final int SALT_LENGTH_BYTE = 16;
+        public static final int AES_KEY_BIT = 256;
+    }
+
+    /**
+     * Generate a random nonce of specified number of bytes
+     * @param numBytes Number of bytes of the nonce
+     * @return byte array representing the nonce
+     */
+    public static byte[] getRandomNonce(int numBytes) {
+        byte[] nonce = new byte[numBytes];
+        new SecureRandom().nextBytes(nonce);
+        return nonce;
+    }
+
+    /**
+     * Generate AES key from a given password and salt
+     * @param password The password to derive the key from
+     * @param salt The salt to use in key derivation
+     * @return SecretKey derived from the password and salt
+     * @throws NoSuchAlgorithmException
+     * @throws InvalidKeySpecException
+     */
+    public static SecretKey getAESKeyFromPassword(char[] password, byte[] salt)
+            throws NoSuchAlgorithmException, InvalidKeySpecException {
+        SecretKeyFactory factory = SecretKeyFactory.getInstance("PBKDF2WithHmacSHA256");
+        KeySpec spec = new PBEKeySpec(password, salt, 65536, ValueUtils.AES_KEY_BIT);
+        SecretKey secret = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
+        return secret;
+    }
+
+    /**
+     * Convert SecretKey to a Base64 encoded string
+     * @param secretKey The SecretKey to convert
+     * @return Base64 encoded string representation of the SecretKey
+     * @throws Exception
+     */
+    public static String convertSecretKeyToString(SecretKey secretKey) throws Exception {
+        return Base64.getEncoder().encodeToString(secretKey.getEncoded());
+    }
+
+    /**
+     * Convert a Base64 encoded string back to a SecretKey
+     * @param key The Base64 encoded string representation of the SecretKey
+     * @return The SecretKey
+     */
+    public static SecretKey convertStringToSecretKey(String key) {
+        byte[] decodedKey = Base64.getDecoder().decode(key);
+        return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
+    }
+
+    /**
+     * Encrypt the given text using AES-GCM
+     * @param value The plaintext to encrypt
+     * @param key The Base64 encoded string representation of the SecretKey
+     * @return Base64 encoded string of the encrypted text with IV prepended
+     * @throws Exception
+     */
+    public String encryptText(String value, String key) throws Exception {
+        byte[] plainText = value.getBytes();
+
+        byte[] iv = getRandomNonce(ValueUtils.IV_LENGTH_BYTE);
+        SecretKey secretkey = convertStringToSecretKey(key);
+
+        Cipher cipher = Cipher.getInstance(ValueUtils.AESGCM_ALGO);
+        cipher.init(Cipher.ENCRYPT_MODE, secretkey, new GCMParameterSpec(ValueUtils.TAG_LENGTH_BIT, iv));
+
+        byte[] encryptedText = cipher.doFinal(plainText);
+        byte[] encryptedTextWithIv = ByteBuffer.allocate(iv.length + encryptedText.length)
+                .put(iv)
+                .put(encryptedText)
+                .array();
+        return Base64.getEncoder().encodeToString(encryptedTextWithIv);
+    }
+
+    /**
+     * Decrypt the given encrypted text using AES-GCM
+     * @param value The Base64 encoded string of the encrypted text with IV prepended
+     * @param key The Base64 encoded string representation of the SecretKey
+     * @return The decrypted plaintext
+     * @throws Exception
+     */
+    public String decryptText(String value, String key) throws Exception {
+        byte[] decode = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
+        ByteBuffer bufferEncryptedText = ByteBuffer.wrap(decode);
+
+        byte[] iv = new byte[ValueUtils.IV_LENGTH_BYTE];
+        bufferEncryptedText.get(iv);
+
+        byte[] cipherText = new byte[bufferEncryptedText.remaining()];
+        bufferEncryptedText.get(cipherText);
+
+        Cipher cipher = Cipher.getInstance(ValueUtils.AESGCM_ALGO);
+        SecretKey secretKey = convertStringToSecretKey(key);
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(ValueUtils.TAG_LENGTH_BIT, iv));
+        byte[] plainText = cipher.doFinal(cipherText);
+        return new String(plainText, StandardCharsets.UTF_8);
+    }
+
+    /**
+     * Encrypt a file using AES-GCM
+     * @param file The file to encrypt
+     * @param key The Base64 encoded string representation of the SecretKey
+     * @return The encrypted file
+     * @throws Exception
+     */
+    public File encryptFile(File file, String key) throws Exception {
+        String pathOutput = file.getAbsolutePath() + ".encrypted";
+        Path path = Paths.get(pathOutput);
+        SecretKey secretKey = convertStringToSecretKey(key);
+        byte[] iv = getRandomNonce(ValueUtils.IV_LENGTH_BYTE);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.ENCRYPT_MODE, secretKey, new GCMParameterSpec(ValueUtils.TAG_LENGTH_BIT, iv));
+
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] inputBytes = new byte[(int) file.length()];
+        inputStream.read(inputBytes);
+        byte[] outputBytes = cipher.doFinal(inputBytes);
+
+        File fileEncryptOut = new File(path.toUri());
+        FileOutputStream outputStream = new FileOutputStream(fileEncryptOut);
+        outputStream.write(iv);
+        outputStream.write(outputBytes);
+
+        inputStream.close();
+        outputStream.close();
+        return fileEncryptOut;
+    }
+
+    /**
+     * Decrypt a file using AES-GCM
+     * @param file The file to decrypt
+     * @param key The Base64 encoded string representation of the SecretKey
+     * @return The decrypted file
+     * @throws Exception
+     */
+    public File decryptFile(File file, String key) throws Exception {
+        String pathOutput = file.getAbsolutePath() + ".decrypted";
+        Path path = Paths.get(pathOutput);
+        SecretKey secretKey = convertStringToSecretKey(key);
+        FileInputStream inputStream = new FileInputStream(file);
+        byte[] iv = new byte[ValueUtils.IV_LENGTH_BYTE];
+        inputStream.read(iv);
+        byte[] inputBytes = new byte[(int) (file.length() - iv.length)];
+        inputStream.read(inputBytes);
+        Cipher cipher = Cipher.getInstance("AES/GCM/NoPadding");
+        cipher.init(Cipher.DECRYPT_MODE, secretKey, new GCMParameterSpec(ValueUtils.TAG_LENGTH_BIT, iv));
+        byte[] outputBytes = cipher.doFinal(inputBytes);
+
+        File fileEncryptOut = new File(path.toUri());
+        FileOutputStream outputStream = new FileOutputStream(fileEncryptOut);
+        outputStream.write(outputBytes);
+        inputStream.close();
+        outputStream.close();
+        return fileEncryptOut;
+    }
+
+    /**
+     * Generate a new AES key
+     * @param initialValue The text to generate a key from
+     * @return Base64 encoded string representation of the generated SecretKey
+     * @throws Exception
+     */
+    public String generateKey(String initialValue) throws Exception {
+        byte[] salt = getRandomNonce(ValueUtils.SALT_LENGTH_BYTE);
+        SecretKey secretKey = getAESKeyFromPassword(initialValue.toCharArray(), salt);
+        return convertSecretKeyToString(secretKey);
+    }
 }
