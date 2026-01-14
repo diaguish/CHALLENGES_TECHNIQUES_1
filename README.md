@@ -14,11 +14,12 @@ Développement itératif :
 ## Compilation
 Depuis le dossier `Livrables` :
 ```bash
-javac -d ./bin/ ./src/Main.java ./src/application/*.java ./src/cli/*.java ./src/domain/exception/*.java ./src/domain/repository/*.java ./src/domain/model/*.java ./src/infrastructures/filesystem/*.java
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java")
+
 
 Exécution
 ```bash
-java -cp bin Main
+java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main
 ```
 ## Commandes disponibles (Itération 1)
 
@@ -94,3 +95,11 @@ Dans se dossier il n'y a pas vraiment de code, c'est un dossier où tout est dé
 ### Infrastructure
 c'est l'endroit où tout les accée vers l'exterieur sont réèlement fait, l'application appelle ces méthode via le domaine 
 
+
+## Journalisation
+
+Pour chaque action faite sur l'application (CRUD, erreur, ...) je stock :
+La date exacte de l'action
+Quel utilisateur à fait l'action
+Quel est l'action
+Quel fichier est touché par l'action

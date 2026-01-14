@@ -5,21 +5,25 @@ import domain.exception.FileAccessException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import infrastructures.filesystem.LocalFileRepository;
-
+import infrastructures.database.Journalisation;
+import java.sql.SQLException;
 
 public class WorkingContext {
 
     private final Path root;
     private Path current;
     private LocalFileRepository fileRepository = new LocalFileRepository();
+    private Journalisation journalisation;
 
-    public WorkingContext(String rootDirectory) {
+    public WorkingContext(String rootDirectory) throws SQLException {
         /**
          * Initialize the working context with a root directory. Sets the current directory to root.
          * rootDirectory: String - the path of the root directory
          */
         this.root = Paths.get(rootDirectory).toAbsolutePath().normalize();
         this.current = root;
+        this.journalisation = Journalisation.getInstance();
+        
     }
 
     public String pwd() {
@@ -27,6 +31,11 @@ public class WorkingContext {
          * Get the current working directory relative to the root.
          * return the relative path as a string
          */
+        try {
+            journalisation.createLog("system", "PWD", current.toString());
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
         Path relative = root.relativize(current);
         return relative.toString().isEmpty() ? "/" : "/" + relative;
     }
@@ -59,6 +68,11 @@ public class WorkingContext {
         * input: String - the input path to change to
         * return success or error message
         */
+        try {
+            journalisation.createLog("system", "CD", input);
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
         if (input == null || input.trim().isEmpty()) {
             return "Le nom du répertoire ne peut pas être vide.";
         }
@@ -81,6 +95,11 @@ public class WorkingContext {
             this.current = newPath;
             return "Changement de répertoire réussi.";
         } catch (IllegalArgumentException e) {
+            try {
+                journalisation.createLog("system", "CD_FAILED", input);
+            } catch (SQLException se) {
+                return "Chemin invalide: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Chemin invalide: " + e.getMessage();
         }
     }

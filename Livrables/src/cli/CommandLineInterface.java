@@ -2,26 +2,34 @@ package cli;
 import java.util.Scanner;
 import application.WorkingContext;
 import application.FileService;
+import java.sql.SQLException;
+ 
+
 
 public class CommandLineInterface {
 
-    private final WorkingContext context;
-    private final Scanner scanner;
+    private WorkingContext context;
+    private Scanner scanner;
     private MenuRenderer MenuRenderer;
     private FileService fileService;
 
     public CommandLineInterface() {
-        this.context = new WorkingContext("root_app"); // define the root directory
-        this.scanner = new Scanner(System.in);
-        this.MenuRenderer = MenuRenderer.getInstance();
-        this.fileService = FileService.getInstance();
+        try {
+            this.context = new WorkingContext("root_app"); // define the root directory
+            this.scanner = new Scanner(System.in);
+            this.MenuRenderer = MenuRenderer.getInstance();
+            this.fileService = FileService.getInstance();
+        } catch (SQLException e) {
+            System.err.println("Erreur lors de l'initialisation de la base de données: " + e.getMessage());
+            System.exit(1);
+        }
     }
     
     public void start() {
         
-    System.out.println(this.MenuRenderer.displayWelcome());
-    System.out.println(this.MenuRenderer.displayHelp());
-     while (true) {
+        System.out.println(this.MenuRenderer.displayWelcome());
+        System.out.println(this.MenuRenderer.displayHelp());
+        while (true) {
             System.out.print("sfm:" + context.pwd() + "> ");
             String line = scanner.nextLine().trim();
 
@@ -99,4 +107,4 @@ public class CommandLineInterface {
             }
         }
     }
-    }
+}
