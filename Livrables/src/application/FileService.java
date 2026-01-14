@@ -1,10 +1,15 @@
 package application;
 import domain.repository.FileRepository;
 import infrastructures.filesystem.LocalFileRepository;
+import infrastructures.security.HashService;
+import infrastructures.security.IntegrityStore;
 import domain.exception.*;
 import java.nio.file.Path;
 import infrastructures.database.Journalisation;
 import java.sql.SQLException;
+import java.nio.file.Files;
+import java.io.IOException;
+
 
 public class FileService {
     /**
@@ -13,6 +18,12 @@ public class FileService {
     private static FileService instance;
     private final FileRepository repository;
     private Journalisation journalisation;
+    private HashService hashService ;
+    private IntegrityStore integrityStore;
+    private boolean integrityEnabled() {
+    return hashService != null && integrityStore != null;
+}
+
     
     private FileService() throws SQLException {
         this.repository = new LocalFileRepository();
@@ -36,6 +47,12 @@ public class FileService {
         try {
             repository.create(directory, filename);
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
+            if (integrityEnabled()) {
+            Path filePath = directory.resolve(filename).normalize();
+            String hash = hashService.sha256(filePath);
+            long size = Files.size(filePath);
+            integrityStore.appendEntry(filePath, hash, size);
+    }
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             try {
@@ -53,6 +70,8 @@ public class FileService {
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
+        } catch (IOException e) {
+            return "IO error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
                 journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
@@ -238,9 +257,16 @@ public class FileService {
         * newContent: String - the new content to write to the file
         * return success or error message
         */
+<<<<<<< HEAD
         try {
             String ret = repository.update(directory, filename, newContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
+            if (integrityEnabled()) {
+            Path filePath = directory.resolve(filename).normalize();
+                String hash = hashService.sha256(filePath);
+                long size = java.nio.file.Files.size(filePath);
+                integrityStore.appendEntry(filePath, hash, size);
+            }
             return ret;
         } catch (FileNotFoundException e) {
             try {
@@ -277,6 +303,15 @@ public class FileService {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Unknown error: " + e.getMessage();
-        }
+        }catch (java.io.IOException e) {
+    return "Cannot compute integrity: " + e.getMessage();
+        } 
+
     }
+
+    public void configureIntegrity(Path rootDir) {
+    this.hashService = new HashService();
+    this.integrityStore = new IntegrityStore(rootDir);
+    }
+
 }
