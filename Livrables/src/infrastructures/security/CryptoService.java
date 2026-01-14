@@ -13,11 +13,28 @@ import domain.model.Encrypt;
 
 public class CryptoService implements Encrypt {
     private static class ValueUtils {
-        public static final String AESGCM_ALGO = "AES/GCM/NoPadding";
-        public static final int TAG_LENGTH_BIT = 128;
-        public static final int IV_LENGTH_BYTE = 12;
-        public static final int SALT_LENGTH_BYTE = 16;
-        public static final int AES_KEY_BIT = 256;
+        public static String AESGCM_ALGO;
+        public static int TAG_LENGTH_BIT;
+        public static int IV_LENGTH_BYTE;
+        public static int AES_KEY_BIT;
+        public static int SALT_LENGTH_BYTE;
+
+    }
+
+    public CryptoService() {
+        try {
+            String envPath = ".env";
+            Properties props = new Properties();
+            props.load(new FileInputStream(envPath));
+            
+            ValueUtils.AESGCM_ALGO = props.getProperty("AESGCM_ALGO");
+            ValueUtils.TAG_LENGTH_BIT = Integer.parseInt(props.getProperty("TAG_LENGTH_BITS"));
+            ValueUtils.IV_LENGTH_BYTE = Integer.parseInt(props.getProperty("IV_LENGTH_BYTES"));
+            ValueUtils.AES_KEY_BIT = Integer.parseInt(props.getProperty("AES_KEY_BITS"));
+            ValueUtils.SALT_LENGTH_BYTE = Integer.parseInt(props.getProperty("SALT_LENGTH_BYTES"));
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 
     /**
