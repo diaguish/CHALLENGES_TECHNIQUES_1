@@ -12,7 +12,7 @@ public class FilePassword {
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_FILENAME = "filename";
     private static final String COLUMN_USER = "user";
-    private static final String COLUMN_PASSWORD = "password";
+    private static final String COLUMN_SALT = "salt";
 
     private DatabaseConnection databaseConnection;
     private static FilePassword instance;
@@ -37,7 +37,7 @@ public class FilePassword {
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_FILENAME + " TEXT NOT NULL, " +
                 COLUMN_USER + " TEXT NOT NULL, " +
-                COLUMN_PASSWORD + " TEXT NOT NULL" +
+                COLUMN_SALT + " TEXT NOT NULL" +
                 ")";
 
         initializeTableWithRetry(createTableSQL, 0);
@@ -62,20 +62,20 @@ public class FilePassword {
      *
      * @param filename the filename
      * @param user     the user who owns the password
-     * @param password the password for the file
+     * @param salt     the salt for the file
      * @return the id of the created entry, or -1 if an error occurs
      * @throws SQLException if a database access error occurs
      */
-    public int createFilePassword(String filename, String user, String password) throws SQLException {
+    public int createFilePassword(String filename, String user, String salt) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +
                 COLUMN_FILENAME + ", " +
                 COLUMN_USER + ", " +
-                COLUMN_PASSWORD + ") VALUES (?, ?, ?)";
+                COLUMN_SALT + ") VALUES (?, ?, ?)";
         
-        return createFilePasswordWithRetry(insertSQL, filename, user, password, 0);
+        return createFilePasswordWithRetry(insertSQL, filename, user, salt, 0);
     }
 
-    private int createFilePasswordWithRetry(String insertSQL, String filename, String user, String password, int attempt) throws SQLException {
+    private int createFilePasswordWithRetry(String insertSQL, String filename, String user, String salt, int attempt) throws SQLException {
         if (attempt > 3) {
             throw new SQLException("File password creation failed: Timeout after multiple attempts");
         }
@@ -86,7 +86,7 @@ public class FilePassword {
 
             preparedStatement.setString(1, filename);
             preparedStatement.setString(2, user);
-            preparedStatement.setString(3, password);
+            preparedStatement.setString(3, salt);
 
             preparedStatement.executeUpdate();
 
@@ -98,7 +98,7 @@ public class FilePassword {
             }
             throw new SQLException("Creating file password failed, no ID obtained.");
         } catch (SQLTimeoutException e) {
-            return createFilePasswordWithRetry(insertSQL, filename, user, password, attempt + 1);
+            return createFilePasswordWithRetry(insertSQL, filename, user, salt, attempt + 1);
         }
     }
 
@@ -170,14 +170,14 @@ public class FilePassword {
      * @param id       the id of the entry to update
      * @param filename the new filename
      * @param user     the new user
-     * @param password the new password
+     * @param salt     the new salt
      * @return true if the update succeeded, false otherwise
      */
-    public boolean updateFilePassword(int id, String filename, String user, String password) {
+    public boolean updateFilePassword(int id, String filename, String user, String salt) {
         String updateSQL = "UPDATE " + TABLE_NAME + " SET " +
                 COLUMN_FILENAME + " = ?, " +
                 COLUMN_USER + " = ?, " +
-                COLUMN_PASSWORD + " = ? WHERE " + COLUMN_ID + " = ?";
+                COLUMN_SALT + " = ? WHERE " + COLUMN_ID + " = ?";
 
         try {
             Connection connection = databaseConnection.getConnection();
@@ -185,7 +185,7 @@ public class FilePassword {
 
             preparedStatement.setString(1, filename);
             preparedStatement.setString(2, user);
-            preparedStatement.setString(3, password);
+            preparedStatement.setString(3, salt);
             preparedStatement.setInt(4, id);
 
             int rowsAffected = preparedStatement.executeUpdate();
@@ -276,7 +276,7 @@ public class FilePassword {
         map.put(COLUMN_ID, resultSet.getInt(COLUMN_ID));
         map.put(COLUMN_FILENAME, resultSet.getString(COLUMN_FILENAME));
         map.put(COLUMN_USER, resultSet.getString(COLUMN_USER));
-        map.put(COLUMN_PASSWORD, resultSet.getString(COLUMN_PASSWORD));
+        map.put(COLUMN_SALT, resultSet.getString(COLUMN_SALT));
         return map;
     }
 }

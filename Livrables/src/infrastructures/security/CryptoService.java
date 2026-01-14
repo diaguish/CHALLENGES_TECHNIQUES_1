@@ -232,15 +232,39 @@ public class CryptoService implements Encrypt {
      * @return Base64 encoded string representation of the generated SecretKey
      * @throws CryptoException
      */
-    public String generateKey(String initialValue) throws CryptoException {
+    public String[] generateKey(String initialValue) throws CryptoException {
         try {
             byte[] salt = getRandomNonce(ValueUtils.SALT_LENGTH_BYTE);
             SecretKey secretKey = getAESKeyFromPassword(initialValue.toCharArray(), salt);
-            return convertSecretKeyToString(secretKey);
+            return new String[] {convertSecretKeyToString(secretKey), Base64.getEncoder().encodeToString(salt)};
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
             throw new CryptoException("Error generating key: " + e.getMessage());
+        }
+    }
+
+    /**
+     * Génère un salt aléatoire (base64)
+     */
+    public static String generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16]; // 128 bits
+        random.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+    /**
+     * Hash un mot de passe avec un salt (SHA-256)
+     */
+    public static String hashPassword(String password, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(Base64.getDecoder().decode(salt));
+            byte[] hashedPassword = md.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedPassword);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
         }
     }
 }

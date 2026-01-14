@@ -10,6 +10,7 @@ import java.sql.SQLException;
 import java.nio.file.Files;
 import java.io.IOException;
 import infrastructures.security.CryptoService;
+import infrastructures.database.FilePassword;
 
 public class FileService {
     /**
@@ -18,8 +19,10 @@ public class FileService {
     private static FileService instance;
     private final FileRepository repository;
     private Journalisation journalisation;
+    private FilePassword filePassword;
     private HashService hashService ;
     private IntegrityStore integrityStore;
+    private UserService userService;
     private boolean integrityEnabled() {
     return hashService != null && integrityStore != null;
 }
@@ -28,6 +31,8 @@ public class FileService {
     private FileService() throws SQLException {
         this.repository = new LocalFileRepository();
         this.journalisation = Journalisation.getInstance();
+        this.filePassword = FilePassword.getInstance();
+        this.userService = UserService.getInstance();
     }
     
     public static synchronized FileService getInstance() throws SQLException {
@@ -262,7 +267,11 @@ public class FileService {
         */
         try {
             CryptoService cryptoService = new CryptoService();
-            String encryptedContent = cryptoService.encryptText(newContent, "0".repeat(32));
+            String[] keyAndSalt = cryptoService.generateKey(newContent);
+            String encryptedContent = cryptoService.encryptText(newContent, keyAndSalt[0]);
+            //stock le salt dans FilePassword
+            filePassword.createFilePassword(directory.resolve(filename).toString(), userService.getCurrentUser(), keyAndSalt[1]);
+
             String ret = repository.update(directory, filename, encryptedContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
             if (integrityEnabled()) {
