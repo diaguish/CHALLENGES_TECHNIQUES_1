@@ -1,7 +1,7 @@
 package cli;
 import java.util.Scanner;
-import application.WorkingContext;
 import application.FileService;
+import application.WorkingContext;
 
 public class CommandLineInterface {
 
@@ -15,6 +15,8 @@ public class CommandLineInterface {
         this.scanner = new Scanner(System.in);
         this.MenuRenderer = MenuRenderer.getInstance();
         this.fileService = FileService.getInstance();
+        this.fileService.configureIntegrity(this.context.getRoot());
+
     }
     
     public void start() {

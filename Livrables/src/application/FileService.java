@@ -1,8 +1,13 @@
 package application;
 import domain.repository.FileRepository;
 import infrastructures.filesystem.LocalFileRepository;
+import infrastructures.security.HashService;
+import infrastructures.security.IntegrityStore;
 import domain.exception.*;
 import java.nio.file.Path;
+import java.nio.file.Files;
+import java.io.IOException;
+
 
 public class FileService {
     /**
@@ -10,6 +15,12 @@ public class FileService {
      */
     private static FileService instance;
     private final FileRepository repository;
+    private HashService hashService ;
+    private IntegrityStore integrityStore;
+    private boolean integrityEnabled() {
+    return hashService != null && integrityStore != null;
+}
+
     
     private FileService() {
         this.repository = new LocalFileRepository();
@@ -31,11 +42,19 @@ public class FileService {
          */
         try {
             repository.create(directory, filename);
+            if (integrityEnabled()) {
+            Path filePath = directory.resolve(filename).normalize();
+            String hash = hashService.sha256(filePath);
+            long size = Files.size(filePath);
+            integrityStore.appendEntry(filePath, hash, size);
+    }
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             return "Cannot create file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             return "Invalid filename: " + e.getMessage();
+        } catch (IOException e) {
+            return "IO error: " + e.getMessage();
         } catch (UnknowException e) {
             return "Unknown error: " + e.getMessage();
         }
@@ -134,4 +153,10 @@ public class FileService {
             return "Unknown error: " + e.getMessage();
         }
     }
+
+    public void configureIntegrity(Path rootDir) {
+    this.hashService = new HashService();
+    this.integrityStore = new IntegrityStore(rootDir);
+    }
+
 }

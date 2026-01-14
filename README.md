@@ -14,7 +14,7 @@ Développement itératif :
 ## Compilation
 Depuis le dossier `Livrables` :
 ```bash
-javac -d ./bin/ ./src/Main.java ./src/application/*.java ./src/cli/*.java ./src/domain/exception/*.java ./src/domain/repository/*.java ./src/domain/model/*.java ./src/infrastructures/filesystem/*.java
+javac -d ./bin/ ./src/Main.java ./src/application/*.java ./src/cli/*.java ./src/domain/exception/*.java ./src/domain/repository/*.java ./src/domain/model/*.java ./src/infrastructures/filesystem/*.java ./src/infrastructures/security/*.java ./src/infrastructures/logging/*.java
 
 Exécution
 ```bash
