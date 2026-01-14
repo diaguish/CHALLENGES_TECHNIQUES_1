@@ -141,17 +141,29 @@ public class FileService {
         * newContent: String - the new content to write to the file
         * return success or error message
         */
-        try {
-            return repository.update(directory, filename, newContent);
-        } catch (FileNotFoundException e) {
-            return "Cannot update file: " + e.getMessage();
-        } catch (FileNotReadableException e) {
-            return "File not readable: " + e.getMessage();
-        } catch (IllegalArgumentException e) {
-            return "Invalid filename: " + e.getMessage();
-        } catch (UnknowException e) {
-            return "Unknown error: " + e.getMessage();
-        }
+       try {
+    String result = repository.update(directory, filename, newContent);
+
+    if (integrityEnabled()) {
+        Path filePath = directory.resolve(filename).normalize();
+        String hash = hashService.sha256(filePath);
+        long size = java.nio.file.Files.size(filePath);
+        integrityStore.appendEntry(filePath, hash, size);
+    }
+
+    return result; // ou "File updated successfully" selon ton repo
+} catch (FileNotFoundException e) {
+    return "Cannot update file: " + e.getMessage();
+} catch (FileNotReadableException e) {
+    return "File not readable: " + e.getMessage();
+} catch (IllegalArgumentException e) {
+    return "Invalid filename: " + e.getMessage();
+} catch (java.io.IOException e) {
+    return "Cannot compute integrity: " + e.getMessage();
+} catch (UnknowException e) {
+    return "Unknown error: " + e.getMessage();
+}
+
     }
 
     public void configureIntegrity(Path rootDir) {
