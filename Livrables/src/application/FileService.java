@@ -11,6 +11,7 @@ import java.nio.file.Files;
 import java.io.IOException;
 
 
+
 public class FileService {
     /**
      * Singleton service class to handle file operations.
@@ -257,7 +258,7 @@ public class FileService {
         * newContent: String - the new content to write to the file
         * return success or error message
         */
-<<<<<<< HEAD
+
         try {
             String ret = repository.update(directory, filename, newContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());

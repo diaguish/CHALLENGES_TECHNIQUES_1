@@ -14,13 +14,13 @@ Développement itératif :
 ## Compilation
 Depuis le dossier `Livrables` :
 ```bash
-javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java")
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java") // pour Linux
 
-javac -d ./bin/ ./src/Main.java ./src/application/*.java ./src/cli/*.java ./src/domain/exception/*.java ./src/domain/repository/*.java ./src/domain/model/*.java ./src/infrastructures/filesystem/*.java ./src/infrastructures/security/*.java ./src/infrastructures/logging/*.java
-
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" (Get-ChildItem -Recurse src -Filter *.java | ForEach-Object { $_.FullName })  // Powershell windows
 Exécution
 ```bash
-java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main
+java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main // pour Linux
+java -cp "bin;src/sqlite-jdbc-3.51.1.0.jar" Main // Powershell windows
 ```
 ## Commandes disponibles (Itération 1)
 

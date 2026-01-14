@@ -8,6 +8,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+
 public class Journalisation {
 
     private static final String TABLE_NAME = "journalisation";
