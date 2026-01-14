@@ -1,10 +1,8 @@
 package cli;
 import java.util.Scanner;
-import application.WorkingContext;
 import application.FileService;
 import java.sql.SQLException;
- 
-
+import application.WorkingContext;
 
 public class CommandLineInterface {
 
@@ -19,6 +17,7 @@ public class CommandLineInterface {
             this.scanner = new Scanner(System.in);
             this.MenuRenderer = MenuRenderer.getInstance();
             this.fileService = FileService.getInstance();
+            this.fileService.configureIntegrity(this.context.getRoot());
         } catch (SQLException e) {
             System.err.println("Erreur lors de l'initialisation de la base de données: " + e.getMessage());
             System.exit(1);

@@ -18,9 +18,13 @@ import java.time.LocalDateTime;
 public class IntegrityStore {
 
     private final Path integrityDir;
+    private final Path rootDir;
+
 
     public IntegrityStore(Path rootDir) {
-        this.integrityDir = rootDir.resolve(".integrity").toAbsolutePath().normalize();
+        this.rootDir = rootDir.toAbsolutePath().normalize();
+        this.integrityDir = this.rootDir.getParent().resolve(".integrity").toAbsolutePath().normalize();
+
         try {
             Files.createDirectories(integrityDir);
         } catch (IOException e) {
@@ -137,8 +141,18 @@ public class IntegrityStore {
      * Normalise la clé de fichier (uniformise les séparateurs).
      */
     private String normalizedKey(Path file) {
-        return file.normalize().toString().replace('\\', '/');
+    Path absFile = file.toAbsolutePath().normalize();
+
+    String rel;
+    if (absFile.startsWith(rootDir)) {
+        rel = rootDir.relativize(absFile).toString();
+    } else {
+        rel = file.normalize().toString();
     }
+
+    return rel.replace('\\', '/');
+}
+
 
     private String jsonString(String s) {
         return "\"" + s.replace("\\", "\\\\").replace("\"", "\\\"") + "\"";

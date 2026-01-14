@@ -1,5 +1,3 @@
-
-
 import cli.CommandLineInterface;
 
 
