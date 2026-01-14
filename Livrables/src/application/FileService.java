@@ -38,12 +38,15 @@ public class FileService {
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
+            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
             return "Cannot create file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -60,12 +63,16 @@ public class FileService {
             journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
             return "File deleted successfully";
         } catch (FileNotFoundException e) {
+            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
             return "Cannot delete file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
+            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -82,14 +89,19 @@ public class FileService {
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
             return ret;
         } catch (FileNotFoundException e) {
+            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
             return "Cannot read file: " + e.getMessage();
         } catch (FileNotReadableException e) {
+            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
+            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -106,12 +118,16 @@ public class FileService {
             journalisation.createLog("system", "CREATE_REPO", directory.resolve(directoryName).toString());
             return "Repository created successfully";
         } catch (FileAlreadyExistsException e) {
+            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
             return "Cannot create repository: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
             return "Invalid directory name: " + e.getMessage();
         } catch (SQLException e) {
+            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -127,10 +143,13 @@ public class FileService {
             journalisation.createLog("system", "LIST_FILES", directoryPath.toString());
             return ret;
         }catch (SQLException e) {
+            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
             return "Database error: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
             return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -148,14 +167,19 @@ public class FileService {
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
             return ret;
         } catch (FileNotFoundException e) {
+            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
             return "Cannot update file: " + e.getMessage();
         } catch (FileNotReadableException e) {
+            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
+            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
+            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
+            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
             return "Unknown error: " + e.getMessage();
         }
     }
