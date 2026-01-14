@@ -10,6 +10,7 @@ public class User {
     private static final String COLUMN_ID = "id";
     private static final String COLUMN_USER = "user";
     private static final String COLUMN_PASSWORD = "password";
+    private static final String COLUMN_SALT = "salt";
 
     private DatabaseConnection databaseConnection;
     private static User instance;
@@ -33,7 +34,8 @@ public class User {
         String createTableSQL = "CREATE TABLE IF NOT EXISTS " + TABLE_NAME + " (" +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_USER + " TEXT NOT NULL UNIQUE, " +
-                COLUMN_PASSWORD + " TEXT NOT NULL" +
+                COLUMN_PASSWORD + " TEXT NOT NULL, " +
+                COLUMN_SALT + " TEXT NOT NULL" +
                 ")";
 
         initializeTableWithRetry(createTableSQL, 0);
@@ -57,19 +59,21 @@ public class User {
      * Creates a new user entry (CREATE)
      *
      * @param user     the username
-     * @param password the password for the user
+     * @param hashedPassword the hashed password
+     * @param salt     the salt used for hashing
      * @return the id of the created entry, or -1 if an error occurs
      * @throws SQLException if a database access error occurs
      */
-    public int createUser(String user, String password) throws SQLException {
+    public int createUser(String user, String hashedPassword, String salt) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +
                 COLUMN_USER + ", " +
-                COLUMN_PASSWORD + ") VALUES (?, ?)";
+                COLUMN_PASSWORD + ", " +
+                COLUMN_SALT + ") VALUES (?, ?, ?)";
         
-        return createUserWithRetry(insertSQL, user, password, 0);
+        return createUserWithRetry(insertSQL, user, hashedPassword, salt, 0);
     }
 
-    private int createUserWithRetry(String insertSQL, String user, String password, int attempt) throws SQLException {
+    private int createUserWithRetry(String insertSQL, String user, String hashedPassword, String salt, int attempt) throws SQLException {
         if (attempt > 3) {
             throw new SQLException("User creation failed: Timeout after multiple attempts");
         }
@@ -79,7 +83,8 @@ public class User {
             PreparedStatement preparedStatement = connection.prepareStatement(insertSQL, Statement.RETURN_GENERATED_KEYS);
 
             preparedStatement.setString(1, user);
-            preparedStatement.setString(2, password);
+            preparedStatement.setString(2, hashedPassword);
+            preparedStatement.setString(3, salt);
 
             preparedStatement.executeUpdate();
 
@@ -91,7 +96,7 @@ public class User {
             }
             throw new SQLException("Creating user failed, no ID obtained.");
         } catch (SQLTimeoutException e) {
-            return createUserWithRetry(insertSQL, user, password, attempt + 1);
+            return createUserWithRetry(insertSQL, user, hashedPassword, salt, attempt + 1);
         }
     }
 
@@ -130,7 +135,7 @@ public class User {
      * Retrieves a user entry by username (READ)
      *
      * @param user the username
-     * @return a Map containing the entry data, or null if not found
+     * @return a Map containing the entry data (including salt), or null if not found
      */
     public Map<String, Object> getUserByUser(String user) throws SQLException {
         String selectSQL = "SELECT * FROM " + TABLE_NAME + " WHERE " + COLUMN_USER + " = ?";
@@ -173,21 +178,24 @@ public class User {
      *
      * @param id       the id of the entry to update
      * @param user     the new username
-     * @param password the new password
+     * @param hashedPassword the new hashed password
+     * @param salt     the new salt
      * @return true if the update succeeded, false otherwise
      */
-    public boolean updateUser(int id, String user, String password) {
+    public boolean updateUser(int id, String user, String hashedPassword, String salt) {
         String updateSQL = "UPDATE " + TABLE_NAME + " SET " +
                 COLUMN_USER + " = ?, " +
-                COLUMN_PASSWORD + " = ? WHERE " + COLUMN_ID + " = ?";
+                COLUMN_PASSWORD + " = ?, " +
+                COLUMN_SALT + " = ? WHERE " + COLUMN_ID + " = ?";
 
         try {
             Connection connection = databaseConnection.getConnection();
             PreparedStatement preparedStatement = connection.prepareStatement(updateSQL);
 
             preparedStatement.setString(1, user);
-            preparedStatement.setString(2, password);
-            preparedStatement.setInt(3, id);
+            preparedStatement.setString(2, hashedPassword);
+            preparedStatement.setString(3, salt);
+            preparedStatement.setInt(4, id);
 
             int rowsAffected = preparedStatement.executeUpdate();
             if (rowsAffected > 0) {
@@ -277,6 +285,7 @@ public class User {
         map.put(COLUMN_ID, resultSet.getInt(COLUMN_ID));
         map.put(COLUMN_USER, resultSet.getString(COLUMN_USER));
         map.put(COLUMN_PASSWORD, resultSet.getString(COLUMN_PASSWORD));
+        map.put(COLUMN_SALT, resultSet.getString(COLUMN_SALT));
         return map;
     }
 }

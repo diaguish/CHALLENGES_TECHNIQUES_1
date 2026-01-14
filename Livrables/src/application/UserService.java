@@ -3,6 +3,10 @@ package application;
 import infrastructures.database.User;
 import java.sql.SQLException;
 import java.util.Map;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
+import java.util.Base64;
 
 public class UserService {
 
@@ -20,6 +24,46 @@ public class UserService {
             instance = new UserService();
         }
         return instance;
+    }
+
+    /**
+     * Generates a random salt for password hashing
+     * @return base64 encoded salt
+     */
+    private String generateSalt() {
+        SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16]; // 128 bits
+        random.nextBytes(salt);
+        return Base64.getEncoder().encodeToString(salt);
+    }
+
+    /**
+     * Hashes a password with the given salt using SHA-256
+     * @param password the plain password
+     * @param salt the salt to use
+     * @return the hashed password
+     */
+    private String hashPassword(String password, String salt) {
+        try {
+            MessageDigest md = MessageDigest.getInstance("SHA-256");
+            md.update(Base64.getDecoder().decode(salt));
+            byte[] hashedPassword = md.digest(password.getBytes());
+            return Base64.getEncoder().encodeToString(hashedPassword);
+        } catch (NoSuchAlgorithmException e) {
+            throw new RuntimeException("SHA-256 algorithm not available", e);
+        }
+    }
+
+    /**
+     * Verifies a password against a hash and salt
+     * @param password the plain password to verify
+     * @param hashedPassword the stored hashed password
+     * @param salt the salt used for hashing
+     * @return true if the password matches
+     */
+    private boolean verifyPassword(String password, String hashedPassword, String salt) {
+        String computedHash = hashPassword(password, salt);
+        return computedHash.equals(hashedPassword);
     }
 
     /**
@@ -45,7 +89,9 @@ public class UserService {
             }
 
             // Create the user
-            int userId = userDatabase.createUser(username, password);
+            String salt = generateSalt();
+            String hashedPassword = hashPassword(password, salt);
+            int userId = userDatabase.createUser(username, hashedPassword, salt);
             if (userId > 0) {
                 return "Utilisateur '" + username + "' créé avec succès.";
             } else {
@@ -81,8 +127,10 @@ public class UserService {
                 return "Erreur: Utilisateur introuvable.";
             }
 
-            String storedPassword = (String) user.get("password");
-            if (!storedPassword.equals(password)) {
+            // Verify password using hash
+            String storedHash = (String) user.get("password");
+            String salt = (String) user.get("salt");
+            if (!verifyPassword(password, storedHash, salt)) {
                 return "Erreur: Mot de passe incorrect.";
             }
 
@@ -155,14 +203,17 @@ public class UserService {
             }
 
             // Verify old password
-            String storedPassword = (String) user.get("password");
-            if (!storedPassword.equals(oldPassword)) {
+            String storedHash = (String) user.get("password");
+            String salt = (String) user.get("salt");
+            if (!verifyPassword(oldPassword, storedHash, salt)) {
                 return "Erreur: L'ancien mot de passe est incorrect.";
             }
 
             // Update password
+            String newSalt = generateSalt();
+            String newHashedPassword = hashPassword(newPassword, newSalt);
             int userId = (int) user.get("id");
-            boolean success = userDatabase.updateUser(userId, currentUser, newPassword);
+            boolean success = userDatabase.updateUser(userId, currentUser, newHashedPassword, newSalt);
             if (success) {
                 return "Mot de passe changé avec succès.";
             } else {
