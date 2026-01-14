@@ -9,7 +9,7 @@ import infrastructures.database.Journalisation;
 import java.sql.SQLException;
 import java.nio.file.Files;
 import java.io.IOException;
-
+import infrastructures.security.CryptoService;
 
 public class FileService {
     /**
@@ -133,8 +133,11 @@ public class FileService {
         */
         try {
             String ret = repository.read(directory, filename);
+            //decrypt content
+            CryptoService cryptoService = new CryptoService();
+            String decryptedContent = cryptoService.decryptText(ret, "0".repeat(32));
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
-            return ret;
+            return decryptedContent;
         } catch (FileNotFoundException e) {
             try {
                 journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
@@ -258,7 +261,9 @@ public class FileService {
         * return success or error message
         */
         try {
-            String ret = repository.update(directory, filename, newContent);
+            CryptoService cryptoService = new CryptoService();
+            String encryptedContent = cryptoService.encryptText(newContent, "0".repeat(32));
+            String ret = repository.update(directory, filename, encryptedContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
             if (integrityEnabled()) {
             Path filePath = directory.resolve(filename).normalize();

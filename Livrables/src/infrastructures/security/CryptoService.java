@@ -34,7 +34,7 @@ public class CryptoService implements Encrypt {
             ValueUtils.AES_KEY_BIT = Integer.parseInt(props.getProperty("AES_KEY_BITS"));
             ValueUtils.SALT_LENGTH_BYTE = Integer.parseInt(props.getProperty("SALT_LENGTH_BYTES"));
         } catch (IOException e) {
-            throw new CryptoException("Error loading configuration from .env file", e);
+            throw new CryptoException("Error loading configuration from .env file: " + e.getMessage());
         }
     }
 
@@ -63,7 +63,7 @@ public class CryptoService implements Encrypt {
             SecretKey secret = new SecretKeySpec(factory.generateSecret(spec).getEncoded(), "AES");
             return secret;
         } catch (NoSuchAlgorithmException | InvalidKeySpecException e) {
-            throw new CryptoException("Error generating AES key from password", e);
+            throw new CryptoException("Error generating AES key from password: " + e.getMessage());
         }
     }
 
@@ -77,7 +77,7 @@ public class CryptoService implements Encrypt {
         try {
             return Base64.getEncoder().encodeToString(secretKey.getEncoded());
         } catch (Exception e) {
-            throw new CryptoException("Error converting SecretKey to string", e);
+            throw new CryptoException("Error converting SecretKey to string: " + e.getMessage());
         }
     }
 
@@ -92,7 +92,7 @@ public class CryptoService implements Encrypt {
             byte[] decodedKey = Base64.getDecoder().decode(key);
             return new SecretKeySpec(decodedKey, 0, decodedKey.length, "AES");
         } catch (Exception e) {
-            throw new CryptoException("Error converting string to SecretKey", e);
+            throw new CryptoException("Error converting string to SecretKey: " + e.getMessage());
         }
     }
 
@@ -122,7 +122,7 @@ public class CryptoService implements Encrypt {
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoException("Error encrypting text", e);
+            throw new CryptoException("Error encrypting text: " + e.getMessage());
         }
     }
 
@@ -152,7 +152,7 @@ public class CryptoService implements Encrypt {
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoException("Error decrypting text", e);
+            throw new CryptoException("Error decrypting text: " + e.getMessage());
         }
     }
 
@@ -188,7 +188,7 @@ public class CryptoService implements Encrypt {
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoException("Error encrypting file", e);
+            throw new CryptoException("Error encrypting file: " + e.getMessage());
         }
     }
 
@@ -222,7 +222,7 @@ public class CryptoService implements Encrypt {
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoException("Error decrypting file", e);
+            throw new CryptoException("Error decrypting file: " + e.getMessage());
         }
     }
 
@@ -240,7 +240,7 @@ public class CryptoService implements Encrypt {
         } catch (CryptoException e) {
             throw e;
         } catch (Exception e) {
-            throw new CryptoException("Error generating key", e);
+            throw new CryptoException("Error generating key: " + e.getMessage());
         }
     }
 }
