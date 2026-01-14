@@ -38,15 +38,27 @@ public class FileService {
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
-            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Cannot create file: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Cannot create file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -63,16 +75,32 @@ public class FileService {
             journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
             return "File deleted successfully";
         } catch (FileNotFoundException e) {
-            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Cannot delete file: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Cannot delete file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
-            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                // Log error silently
+            }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -89,19 +117,39 @@ public class FileService {
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
             return ret;
         } catch (FileNotFoundException e) {
-            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Cannot read file: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Cannot read file: " + e.getMessage();
         } catch (FileNotReadableException e) {
-            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "File not readable: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
-            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                // Log error silently
+            }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -118,16 +166,32 @@ public class FileService {
             journalisation.createLog("system", "CREATE_REPO", directory.resolve(directoryName).toString());
             return "Repository created successfully";
         } catch (FileAlreadyExistsException e) {
-            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            try {
+                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            } catch (SQLException se) {
+                return "Cannot create repository: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Cannot create repository: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            try {
+                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            } catch (SQLException se) {
+                return "Invalid directory name: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid directory name: " + e.getMessage();
         } catch (SQLException e) {
-            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            try {
+                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            } catch (SQLException se) {
+                // Log error silently
+            }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            try {
+                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -143,13 +207,25 @@ public class FileService {
             journalisation.createLog("system", "LIST_FILES", directoryPath.toString());
             return ret;
         }catch (SQLException e) {
-            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            try {
+                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            } catch (SQLException se) {
+                return "Database error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Database error: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            try {
+                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            } catch (SQLException se) {
+                return "Invalid directory: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            try {
+                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }
@@ -167,19 +243,39 @@ public class FileService {
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
             return ret;
         } catch (FileNotFoundException e) {
-            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Cannot update file: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Cannot update file: " + e.getMessage();
         } catch (FileNotReadableException e) {
-            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "File not readable: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
-            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                // Log error silently
+            }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
-            journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            try {
+                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Unknown error: " + e.getMessage();
         }
     }

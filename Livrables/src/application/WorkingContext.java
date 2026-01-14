@@ -6,7 +6,7 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 import infrastructures.filesystem.LocalFileRepository;
 import infrastructures.database.Journalisation;
-
+import java.sql.SQLException;
 
 public class WorkingContext {
 
@@ -31,7 +31,11 @@ public class WorkingContext {
          * Get the current working directory relative to the root.
          * return the relative path as a string
          */
-        journalisation.createLog("system", "PWD", current.toString());
+        try {
+            journalisation.createLog("system", "PWD", current.toString());
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
         Path relative = root.relativize(current);
         return relative.toString().isEmpty() ? "/" : "/" + relative;
     }
@@ -64,7 +68,11 @@ public class WorkingContext {
         * input: String - the input path to change to
         * return success or error message
         */
-       journalisation.createLog("system", "CD", input);
+        try {
+            journalisation.createLog("system", "CD", input);
+        } catch (SQLException e) {
+            return "Database error: " + e.getMessage();
+        }
         if (input == null || input.trim().isEmpty()) {
             return "Le nom du répertoire ne peut pas être vide.";
         }
@@ -87,7 +95,11 @@ public class WorkingContext {
             this.current = newPath;
             return "Changement de répertoire réussi.";
         } catch (IllegalArgumentException e) {
-            journalisation.createLog("system", "CD_FAILED", input);
+            try {
+                journalisation.createLog("system", "CD_FAILED", input);
+            } catch (SQLException se) {
+                return "Chemin invalide: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
             return "Chemin invalide: " + e.getMessage();
         }
     }

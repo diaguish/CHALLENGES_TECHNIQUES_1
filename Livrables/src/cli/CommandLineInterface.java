@@ -8,15 +8,14 @@ import java.sql.SQLException;
 
 public class CommandLineInterface {
 
-    private final WorkingContext context;
-    private final Scanner scanner;
+    private WorkingContext context;
+    private Scanner scanner;
     private MenuRenderer MenuRenderer;
     private FileService fileService;
 
     public CommandLineInterface() {
-       
         try {
-             this.context = new WorkingContext("root_app"); // define the root directory
+            this.context = new WorkingContext("root_app"); // define the root directory
             this.scanner = new Scanner(System.in);
             this.MenuRenderer = MenuRenderer.getInstance();
             this.fileService = FileService.getInstance();
@@ -28,9 +27,9 @@ public class CommandLineInterface {
     
     public void start() {
         
-    System.out.println(this.MenuRenderer.displayWelcome());
-    System.out.println(this.MenuRenderer.displayHelp());
-     while (true) {
+        System.out.println(this.MenuRenderer.displayWelcome());
+        System.out.println(this.MenuRenderer.displayHelp());
+        while (true) {
             System.out.print("sfm:" + context.pwd() + "> ");
             String line = scanner.nextLine().trim();
 
@@ -108,4 +107,4 @@ public class CommandLineInterface {
             }
         }
     }
-    }
+}
