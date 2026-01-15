@@ -14,27 +14,35 @@ public class WorkingContext {
     private Path current;
     private LocalFileRepository fileRepository = new LocalFileRepository();
     private Journalisation journalisation;
+    private static WorkingContext instance;
 
-    public WorkingContext(String rootDirectory) throws SQLException {
-        /**
-         * Initialize the working context with a root directory. Sets the current directory to root.
-         * rootDirectory: String - the path of the root directory
-         */
+    /**
+     * Initialize the working context with a root directory. Sets the current directory to root.
+     * rootDirectory: String - the path of the root directory
+     */
+    private WorkingContext(String rootDirectory) throws SQLException {
         this.root = Paths.get(rootDirectory).toAbsolutePath().normalize();
         this.current = root;
         this.journalisation = Journalisation.getInstance();
         
     }
 
+    public static synchronized WorkingContext getInstance(String rootDirectory) throws SQLException {
+        if (instance == null) {
+            instance = new WorkingContext(rootDirectory);
+        }
+        return instance;
+    }
+
     private String formatPath(Path path) {
-    Path relative = root.relativize(path);
-    String rel = relative.toString().replace('\\', '/');
-    return rel.isEmpty() ? "/" : "/" + rel;
+        Path relative = root.relativize(path);
+        String rel = relative.toString().replace('\\', '/');
+        return rel.isEmpty() ? "/" : "/" + rel;
     }
 
     public String displayPath(Path path) {
-    return formatPath(path);
-}
+        return formatPath(path);
+    }
 
     public String pwd() {
         /**

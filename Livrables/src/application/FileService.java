@@ -13,6 +13,7 @@ import java.util.Map;
 import infrastructures.security.CryptoService;
 import infrastructures.database.FilePassword;
 import infrastructures.database.User;
+import application.WorkingContext;
 
 
 public class FileService {
@@ -27,6 +28,7 @@ public class FileService {
     private IntegrityStore integrityStore;
     private UserService userService;
     private User userDatabase;
+    private WorkingContext workingContext;
     private boolean integrityEnabled() {
     return hashService != null && integrityStore != null;
 }
@@ -38,6 +40,7 @@ public class FileService {
         this.filePassword = FilePassword.getInstance();
         this.userDatabase = User.getInstance();
         this.userService = UserService.getInstance();
+        this.workingContext = WorkingContext.getInstance("root_app");
     }
     
     public static synchronized FileService getInstance() throws SQLException {
@@ -63,7 +66,7 @@ public class FileService {
 
             String[] keyAndSalt = cryptoService.generateKey(userHashedPassword);
             String encryptedContent = cryptoService.encryptText("", keyAndSalt[0]);
-            filePassword.createFilePassword(directory.resolve(filename).toString(), userService.getCurrentUser(), keyAndSalt[1]);
+            filePassword.createFilePassword(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename, currentUser, keyAndSalt[1]);
 
             repository.create(directory, filename);
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());

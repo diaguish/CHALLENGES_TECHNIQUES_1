@@ -15,7 +15,7 @@ public class CommandLineInterface {
 
     public CommandLineInterface() {
         try {
-            this.context = new WorkingContext("root_app"); // define the root directory
+            this.context = WorkingContext.getInstance("root_app");
             this.scanner = new Scanner(System.in);
             this.MenuRenderer = MenuRenderer.getInstance();
             this.fileService = FileService.getInstance();
