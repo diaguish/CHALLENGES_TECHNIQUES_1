@@ -9,8 +9,10 @@ import infrastructures.database.Journalisation;
 import java.sql.SQLException;
 import java.nio.file.Files;
 import java.io.IOException;
+import java.util.Map;
 import infrastructures.security.CryptoService;
 import infrastructures.database.FilePassword;
+import infrastructures.database.User;
 
 public class FileService {
     /**
@@ -23,6 +25,7 @@ public class FileService {
     private HashService hashService ;
     private IntegrityStore integrityStore;
     private UserService userService;
+    private User userDatabase;
     private boolean integrityEnabled() {
     return hashService != null && integrityStore != null;
 }
@@ -32,6 +35,7 @@ public class FileService {
         this.repository = new LocalFileRepository();
         this.journalisation = Journalisation.getInstance();
         this.filePassword = FilePassword.getInstance();
+        this.userDatabase = User.getInstance();
         this.userService = UserService.getInstance();
     }
     
@@ -50,6 +54,16 @@ public class FileService {
          * return success or error message
          */
         try {
+            CryptoService cryptoService = new CryptoService();
+
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+
+
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword);
+            String encryptedContent = cryptoService.encryptText("", keyAndSalt[0]);
+            filePassword.createFilePassword(directory.resolve(filename).toString(), userService.getCurrentUser(), keyAndSalt[1]);
+
             repository.create(directory, filename);
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
             if (integrityEnabled()) {
@@ -95,6 +109,11 @@ public class FileService {
         * return success or error message
         */
         try {
+            String Owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            if (Owner == null || !userService.getCurrentUser().equals(Owner)) {
+                return "Cannot delete file: current user is not the owner";
+            }
+
             repository.delete(directory, filename);
             journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
             return "File deleted successfully";
@@ -137,10 +156,19 @@ public class FileService {
         * return the content of the file or an error message
         */
         try {
+            String owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            if (owner == null || !userService.getCurrentUser().equals(owner)) {
+                return "Cannot read file: current user is not the owner";
+            }
             String ret = repository.read(directory, filename);
             //decrypt content
             CryptoService cryptoService = new CryptoService();
-            String decryptedContent = cryptoService.decryptText(ret, "0".repeat(32));
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+            String salt = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("salt").toString();
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
+
+            String decryptedContent = cryptoService.decryptText(ret, keyAndSalt[0]);
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
             return decryptedContent;
         } catch (FileNotFoundException e) {
@@ -266,11 +294,17 @@ public class FileService {
         * return success or error message
         */
         try {
+            Map<String, Object> filePass = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString());
+            String owner = filePass.get("user").toString();
+            String salt = filePass.get("salt").toString();
+            if (owner == null || !userService.getCurrentUser().equals(owner)) {
+                return "Cannot update file: current user is not the owner";
+            }
             CryptoService cryptoService = new CryptoService();
-            String[] keyAndSalt = cryptoService.generateKey(newContent);
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
             String encryptedContent = cryptoService.encryptText(newContent, keyAndSalt[0]);
-            //stock le salt dans FilePassword
-            filePassword.createFilePassword(directory.resolve(filename).toString(), userService.getCurrentUser(), keyAndSalt[1]);
 
             String ret = repository.update(directory, filename, encryptedContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());

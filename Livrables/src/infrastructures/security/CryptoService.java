@@ -244,6 +244,18 @@ public class CryptoService implements Encrypt {
         }
     }
 
+    public String[] generateKey(String initialValue, String saltStr) throws CryptoException {
+        try {
+            byte[] salt = Base64.getDecoder().decode(saltStr);
+            SecretKey secretKey = getAESKeyFromPassword(initialValue.toCharArray(), salt);
+            return new String[] {convertSecretKeyToString(secretKey), saltStr};
+        } catch (CryptoException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new CryptoException("Error generating key with provided salt: " + e.getMessage());
+        }
+    }
+
     /**
      * Génère un salt aléatoire (base64)
      */
