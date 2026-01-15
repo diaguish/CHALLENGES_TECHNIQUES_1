@@ -4,6 +4,8 @@ import domain.exception.FileNotFoundException;
 import domain.exception.FileNotReadableException;
 import domain.exception.UnknowException;
 import domain.repository.FileRepository;
+
+import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -11,6 +13,10 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class LocalFileRepository implements FileRepository {
+    private static final String RESET = "\u001B[0m";
+    private static final String BLUE = "\u001B[34m";
+    private static final String WHITE = "\u001B[37m";
+
     @Override
     public void create(Path directory, String filename) throws FileAlreadyExistsException, IllegalArgumentException, UnknowException {
         /**
@@ -128,13 +134,23 @@ public class LocalFileRepository implements FileRepository {
             throw new IllegalArgumentException("Directory does not exist: " + directoryName.toString());
         }
 
-        try {
-            List<String> fileNames = new ArrayList<>();
-            Files.list(directoryName).forEach(path -> fileNames.add(path.getFileName().toString()));
-            return String.join("\n", fileNames);
-        } catch (java.io.IOException e) {
-            throw new UnknowException("Unknown error while listing files in directory: " + directoryName.toString());
-        }
+         try {
+        List<String> items = new ArrayList<>();
+
+        Files.list(directoryName).forEach(path -> {
+            String name = path.getFileName().toString();
+
+            if (Files.isDirectory(path)) {
+                items.add(BLUE + name + "/" + RESET);
+            } else {
+                items.add(WHITE + name + RESET);
+            }
+        });
+
+        return String.join("\n", items);
+    } catch (IOException e) {
+        throw new UnknowException("Unknown error while listing files in directory: " + directoryName);
+    }
     }
 
     @Override

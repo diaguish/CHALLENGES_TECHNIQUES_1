@@ -278,6 +278,7 @@ public class FileService {
             String ret = getInstance().repository.listFiles(directoryPath);
             journalisation.createLog("system", "LIST_FILES", directoryPath.toString());
             return ret;
+
         }catch (SQLException e) {
             try {
                 journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
