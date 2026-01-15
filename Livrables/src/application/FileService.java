@@ -148,11 +148,12 @@ public class FileService {
         try {
             String integrityError = checkIntegrity(directory, filename);
             if (integrityError != null) {
-            return integrityError;
+                return integrityError;
             }
             if (integrityEnabled()) {
-            Path filePath = directory.resolve(filename).normalize();
-             integrityStore.appendDeleteEvent(filePath);
+                Path filePath = directory.resolve(filename).normalize();
+                integrityStore.appendDeleteEvent(filePath);
+            }
              
             String Owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
             if (Owner == null || !userService.getCurrentUser().equals(Owner)) {

@@ -137,17 +137,13 @@ public class CryptoService implements Encrypt {
      */
     public String decryptText(String value, String key) throws CryptoException, HashException {
         try {
-            System.out.println("Decrypting value: " + value);
             byte[] decode = null;
             try{
                 decode = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
-                System.out.println("Decoded bytes: " + Arrays.toString(decode));
             } catch(IllegalArgumentException e){
                 throw new HashException("Invalid Base64 input for decryption: " + e.getMessage());
             }
-            System.out.println("Decoded byte array length: " + decode.length);
             ByteBuffer bufferEncryptedText = ByteBuffer.wrap(decode);
-            System.out.println("Buffer: " + Arrays.toString(bufferEncryptedText.array()));
 
             byte[] iv = new byte[ValueUtils.IV_LENGTH_BYTE];
             bufferEncryptedText.get(iv);
