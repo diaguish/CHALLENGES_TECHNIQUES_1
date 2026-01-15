@@ -187,4 +187,11 @@ public class IntegrityStore {
             this.size = size;
         }
     }
+
+    public void appendDeleteEvent(Path file) {
+    // hash spécial + size = 0
+    appendEntry(file, "DELETED", 0);
+}
+
+
 }

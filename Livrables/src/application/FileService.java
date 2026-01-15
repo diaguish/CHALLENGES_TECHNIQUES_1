@@ -83,6 +83,42 @@ public class FileService {
         }
     }
 
+    private String checkIntegrity(Path directory, String filename) {
+    if (!integrityEnabled()) return null;
+
+        try {
+            Path filePath = directory.resolve(filename).normalize();
+        IntegrityStore.IntegrityEntry last = integrityStore.loadLastEntry(filePath);
+        if (last == null) {
+            // pas encore d'entrée => on laisse passer
+            return null;
+        }
+        if ("DELETED".equals(last.hash)) {
+    // Si l'historique dit "supprimé", alors le fichier ne devrait plus exister
+    if (Files.exists(filePath)) {
+        journalisation.createLog("system", "INTEGRITY_MISMATCH", filePath.toString());
+        return "Integrite compromise : fichier present alors qu'il est marque supprime.";
+    }
+    return null; // ok: il est bien absent
+}
+
+
+        String currentHash = hashService.sha256(filePath);
+        long currentSize = Files.size(filePath);
+
+        boolean ok = last.hash.equals(currentHash) && last.size == currentSize;
+        if (!ok) {
+            journalisation.createLog("system", "INTEGRITY_MISMATCH", filePath.toString());
+            return "⚠️ Intégrité compromise : le fichier a été modifié hors application.";
+        }
+
+        return null;
+    } catch (IOException | SQLException e) {
+        return "Erreur lors de la vérification d'intégrité : " + e.getMessage();
+    }
+}
+
+
     public String deleteFile(Path directory, String filename) {
         /**
         * Delete a file in the specified directory.
@@ -91,6 +127,16 @@ public class FileService {
         * return success or error message
         */
         try {
+            String integrityError = checkIntegrity(directory, filename);
+            if (integrityError != null) {
+            return integrityError;
+            }
+            if (integrityEnabled()) {
+            Path filePath = directory.resolve(filename).normalize();
+             integrityStore.appendDeleteEvent(filePath);
+             
+            }
+
             repository.delete(directory, filename);
             journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
             return "File deleted successfully";
@@ -125,6 +171,7 @@ public class FileService {
         }
     }
 
+    
     public String readFile(Path directory, String filename) {
         /**
         * Read the content of a file in the specified directory.
@@ -133,6 +180,11 @@ public class FileService {
         * return the content of the file or an error message
         */
         try {
+            String integrityError = checkIntegrity(directory, filename);
+        if (integrityError != null) {
+        return integrityError;
+        }   
+
             String ret = repository.read(directory, filename);
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
             return ret;
