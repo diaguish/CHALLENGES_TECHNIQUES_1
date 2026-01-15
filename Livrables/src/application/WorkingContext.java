@@ -32,6 +32,10 @@ public class WorkingContext {
     return rel.isEmpty() ? "/" : "/" + rel;
     }
 
+    public String displayPath(Path path) {
+    return formatPath(path);
+}
+
     public String pwd() {
         /**
          * Get the current working directory relative to the root.

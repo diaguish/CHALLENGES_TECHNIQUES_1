@@ -18,6 +18,7 @@ public class CommandLineInterface {
             this.MenuRenderer = MenuRenderer.getInstance();
             this.fileService = FileService.getInstance();
             this.fileService.configureIntegrity(this.context.getRoot());
+
         } catch (SQLException e) {
             System.err.println("Erreur lors de l'initialisation de la base de données: " + e.getMessage());
             System.exit(1);
@@ -49,8 +50,9 @@ public class CommandLineInterface {
                     break;
 
                 case "ls":
-                    display = MenuRenderer.displayFiles(context.getCurrent());
-                    break;
+                        String pathToDisplay = context.displayPath(context.getCurrent());
+                        display = MenuRenderer.displayFiles(pathToDisplay, context.getCurrent());
+                        break;
 
                 case "create":
                     System.out.print("Entrez le nom du fichier à créer: ");

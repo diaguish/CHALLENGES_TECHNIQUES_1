@@ -3,6 +3,7 @@ package cli;
 import application.FileService;
 import java.nio.file.Path;
 import java.sql.SQLException;
+import application.WorkingContext;
 public class MenuRenderer {
     /**
      * Singleton class to create message to the Interface
@@ -49,13 +50,14 @@ public class MenuRenderer {
         return help;
     }
 
-    public String displayFiles(Path currentDirectory) {
+    public String displayFiles(String displayPath ,Path currentDirectory ) {
         /**
         Display the list of files in the current directory.
         currentDirectory: String - the path of the current directory
+        displayPath: String - the formatted path of the current directory
         return the formatted string of files
         */
-        String ret = "Fichiers dans " + currentDirectory + ":\n";
+        String ret = "Fichiers dans " + displayPath + ":\n";
         ret += fileService.listFiles(currentDirectory);
         return ret;
     }
