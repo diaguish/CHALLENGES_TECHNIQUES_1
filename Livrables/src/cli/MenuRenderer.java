@@ -46,6 +46,10 @@ public class MenuRenderer {
         help += "  delete - supprimer un fichier\n";
         help += "  update - mettre à jour le contenu d'un fichier\n";
         help += "  read  - lire le contenu d'un fichier\n";
+        help += "  cd    - changer de répertoire\n";
+        help += "  login - se connecter\n";
+        help += "  register - créer un compte\n";
+        help += "  logout - se déconnecter\n";
         help += "  exit  - quitter\n";
         return help;
     }

@@ -70,6 +70,7 @@ public class Journalisation {
      * @param actionType the type of action (CREATE, READ, UPDATE, DELETE, etc.)
      * @param file       the path of the affected file
      * @return the id of the created entry, or -1 if an error occurs
+     * @throws SQLException if a database access error occurs
      */
     public int createLog(String user, String actionType, String file) throws SQLException {
         String insertSQL = "INSERT INTO " + TABLE_NAME + " (" +

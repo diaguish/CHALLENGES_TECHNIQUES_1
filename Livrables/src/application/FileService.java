@@ -9,7 +9,10 @@ import infrastructures.database.Journalisation;
 import java.sql.SQLException;
 import java.nio.file.Files;
 import java.io.IOException;
-
+import java.util.Map;
+import infrastructures.security.CryptoService;
+import infrastructures.database.FilePassword;
+import infrastructures.database.User;
 
 
 public class FileService {
@@ -19,8 +22,11 @@ public class FileService {
     private static FileService instance;
     private final FileRepository repository;
     private Journalisation journalisation;
+    private FilePassword filePassword;
     private HashService hashService ;
     private IntegrityStore integrityStore;
+    private UserService userService;
+    private User userDatabase;
     private boolean integrityEnabled() {
     return hashService != null && integrityStore != null;
 }
@@ -29,6 +35,9 @@ public class FileService {
     private FileService() throws SQLException {
         this.repository = new LocalFileRepository();
         this.journalisation = Journalisation.getInstance();
+        this.filePassword = FilePassword.getInstance();
+        this.userDatabase = User.getInstance();
+        this.userService = UserService.getInstance();
     }
     
     public static synchronized FileService getInstance() throws SQLException {
@@ -46,6 +55,16 @@ public class FileService {
          * return success or error message
          */
         try {
+            CryptoService cryptoService = new CryptoService();
+
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+
+
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword);
+            String encryptedContent = cryptoService.encryptText("", keyAndSalt[0]);
+            filePassword.createFilePassword(directory.resolve(filename).toString(), userService.getCurrentUser(), keyAndSalt[1]);
+
             repository.create(directory, filename);
             journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
             if (integrityEnabled()) {
@@ -135,6 +154,9 @@ public class FileService {
             Path filePath = directory.resolve(filename).normalize();
              integrityStore.appendDeleteEvent(filePath);
              
+            String Owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            if (Owner == null || !userService.getCurrentUser().equals(Owner)) {
+                return "Cannot delete file: current user is not the owner";
             }
 
             repository.delete(directory, filename);
@@ -181,13 +203,25 @@ public class FileService {
         */
         try {
             String integrityError = checkIntegrity(directory, filename);
-        if (integrityError != null) {
-        return integrityError;
-        }   
+            if (integrityError != null) {
+                return integrityError;
+            }   
 
+            String owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            if (owner == null || !userService.getCurrentUser().equals(owner)) {
+                return "Cannot read file: current user is not the owner";
+            }
             String ret = repository.read(directory, filename);
+            //decrypt content
+            CryptoService cryptoService = new CryptoService();
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+            String salt = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("salt").toString();
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
+
+            String decryptedContent = cryptoService.decryptText(ret, keyAndSalt[0]);
             journalisation.createLog("system", "READ", directory.resolve(filename).toString());
-            return ret;
+            return decryptedContent;
         } catch (FileNotFoundException e) {
             try {
                 journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
@@ -216,6 +250,13 @@ public class FileService {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
+        } catch (HashException e) {
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Hash error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
+            return "Hash error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
                 journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
@@ -311,9 +352,20 @@ public class FileService {
         * newContent: String - the new content to write to the file
         * return success or error message
         */
-
         try {
-            String ret = repository.update(directory, filename, newContent);
+            Map<String, Object> filePass = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString());
+            String owner = filePass.get("user").toString();
+            String salt = filePass.get("salt").toString();
+            if (owner == null || !userService.getCurrentUser().equals(owner)) {
+                return "Cannot update file: current user is not the owner";
+            }
+            CryptoService cryptoService = new CryptoService();
+            String currentUser = userService.getCurrentUser();
+            String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
+            String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
+            String encryptedContent = cryptoService.encryptText(newContent, keyAndSalt[0]);
+
+            String ret = repository.update(directory, filename, encryptedContent);
             journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
             if (integrityEnabled()) {
             Path filePath = directory.resolve(filename).normalize();
