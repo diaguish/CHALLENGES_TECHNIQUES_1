@@ -87,7 +87,8 @@ public class CommandLineInterface {
                     String filename = scanner.nextLine().trim();
                     System.out.print("Entrez le nouveau contenu du fichier: ");
                     String newContent = scanner.nextLine();
-                    display = fileService.updateFile(context.getCurrent(), filename, newContent);
+                    fileService.updateFile(context.getCurrent(), filename, newContent);
+                    display = "Contenu du fichier mis à jour.";
                     break;
 
                 case "cd":
