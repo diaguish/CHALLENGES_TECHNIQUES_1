@@ -1,1 +1,6 @@
-/bin
+bin/application/*
+bin/cli/*
+bin/domain/*
+bin/infrastructures/*
+bin/main/*
+bin/*
