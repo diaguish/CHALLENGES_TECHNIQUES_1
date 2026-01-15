@@ -5,6 +5,10 @@ import java.sql.SQLException;
 import application.WorkingContext;
 import application.UserService;
 
+/**
+ * Command line interface for the Secure File Manager application.
+ * Handles user input and executes file operations.
+ */
 public class CommandLineInterface {
 
     private WorkingContext context;
@@ -13,9 +17,13 @@ public class CommandLineInterface {
     private FileService fileService;
     private UserService userService;
 
+    /**
+     * Constructor initializes all required services.
+     * Exits the program if database connection fails.
+     */
     public CommandLineInterface() {
         try {
-            this.context = new WorkingContext("root_app"); // define the root directory
+            this.context = WorkingContext.getInstance("root_app");
             this.scanner = new Scanner(System.in);
             this.MenuRenderer = MenuRenderer.getInstance();
             this.fileService = FileService.getInstance();
@@ -27,6 +35,10 @@ public class CommandLineInterface {
         }
     }
     
+    /**
+     * Starts the main command loop of the application.
+     * Requires user authentication before proceeding.
+     */
     public void start() {
         // Check authentication first
         if (!ensureAuthentication()) {
@@ -87,7 +99,8 @@ public class CommandLineInterface {
                     String filename = scanner.nextLine().trim();
                     System.out.print("Entrez le nouveau contenu du fichier: ");
                     String newContent = scanner.nextLine();
-                    display = fileService.updateFile(context.getCurrent(), filename, newContent);
+                    fileService.updateFile(context.getCurrent(), filename, newContent);
+                    display = "Contenu du fichier mis à jour.";
                     break;
 
                 case "cd":

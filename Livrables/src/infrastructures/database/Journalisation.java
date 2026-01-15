@@ -63,9 +63,8 @@ public class Journalisation {
     }
 
     /**
-     * Creates a new journalisation entry (CREATE)
+     * Creates a new journalisation entry in the database.
      *
-     * @param actionId   the action id
      * @param user       the user who performed the action
      * @param actionType the type of action (CREATE, READ, UPDATE, DELETE, etc.)
      * @param file       the path of the affected file

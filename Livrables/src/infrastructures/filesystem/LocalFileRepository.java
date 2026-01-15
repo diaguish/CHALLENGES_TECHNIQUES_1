@@ -12,21 +12,26 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Local file system implementation of FileRepository.
+ * Provides file and directory operations on the local file system.
+ */
 public class LocalFileRepository implements FileRepository {
     private static final String RESET = "\u001B[0m";
     private static final String BLUE = "\u001B[34m";
     private static final String WHITE = "\u001B[37m";
 
+    /**
+     * Creates a new file in the specified directory.
+     * 
+     * @param directory the directory path where the file will be created
+     * @param filename the name of the file to create
+     * @throws FileAlreadyExistsException if the file already exists
+     * @throws IllegalArgumentException if the filename is invalid
+     * @throws UnknowException for any other file system errors
+     */
     @Override
     public void create(Path directory, String filename) throws FileAlreadyExistsException, IllegalArgumentException, UnknowException {
-        /**
-         * Create a new file in the specified directory.
-         * directory: Path - the path of the directory where the file will be created
-         * filename: String - the name of the file to be created
-         * throws FileAlreadyExistsException if the file already exists
-         * throws IllegalArgumentException if the filename is invalid
-         * throws UnknowException for any other errors
-         */
         if(filename == null || filename.trim().isEmpty() || directory == null) {
             throw new IllegalArgumentException("Filename cannot be null or empty");
         }
@@ -41,16 +46,17 @@ public class LocalFileRepository implements FileRepository {
 
     }
 
+    /**
+     * Deletes a file from the specified directory.
+     * 
+     * @param directory the directory path containing the file
+     * @param filename the name of the file to delete
+     * @throws FileNotFoundException if the file does not exist
+     * @throws IllegalArgumentException if the filename is invalid
+     * @throws UnknowException for any other file system errors
+     */
     @Override
     public void delete(Path directory, String filename) throws FileNotFoundException, IllegalArgumentException, UnknowException {
-        /**
-         * Delete a file in the specified directory.
-         * directory: Path - the path of the directory where the file is located
-         * filename: String - the name of the file to be deleted
-         * throws FileNotFoundException if the file does not exist
-         * throws IllegalArgumentException if the filename is invalid
-         * throws UnknowException for any other errors
-         */
         if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotFoundException("File not found: " + filename);
         }
@@ -65,18 +71,19 @@ public class LocalFileRepository implements FileRepository {
         }
     }
 
+    /**
+     * Reads the content of a file.
+     * 
+     * @param directory the directory path containing the file
+     * @param filename the name of the file to read
+     * @return the content of the file as a String
+     * @throws FileNotFoundException if the file does not exist
+     * @throws FileNotReadableException if the file is not readable
+     * @throws IllegalArgumentException if the filename is invalid
+     * @throws UnknowException for any other file system errors
+     */
     @Override
     public String read(Path directory, String filename) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException {
-        /**
-         * Read the content of a file in the specified directory.
-         * directory: Path - the path of the directory where the file is located
-         * filename: String - the name of the file to be read
-         * return the content of the file as a String
-         * throws FileNotFoundException if the file does not exist
-         * throws FileNotReadableException if the file is not readable
-         * throws IllegalArgumentException if the filename is invalid
-         * throws UnknowException for any other errors
-         */
         if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotFoundException("File not found: " + filename);
         }
@@ -95,16 +102,17 @@ public class LocalFileRepository implements FileRepository {
         }
     }
 
+    /**
+     * Creates a new directory in the specified location.
+     * 
+     * @param directory the parent directory path
+     * @param directoryName the name of the new directory to create
+     * @throws IllegalArgumentException if the directory name is invalid
+     * @throws UnknowException for any other file system errors
+     * @throws FileAlreadyExistsException if the directory already exists
+     */
     @Override
     public void createRepository(Path directory, String directoryName) throws IllegalArgumentException, UnknowException, FileAlreadyExistsException {
-        /**
-         * Create a new directory in the specified directory.
-         * directory: Path - the path of the directory where the new directory will be created
-         * directoryName: String - the name of the new directory to be created
-         * throws FileAlreadyExistsException if the directory already exists
-         * throws IllegalArgumentException if the directory name is invalid
-         * throws UnknowException for any other errors
-         */
         if(directoryName == null || directoryName.trim().isEmpty()) {
             throw new IllegalArgumentException("Directory name cannot be null or empty");
         }
@@ -118,15 +126,17 @@ public class LocalFileRepository implements FileRepository {
         }
     }
 
+    /**
+     * Lists all files and directories in the specified directory.
+     * Directories are displayed in blue with a trailing slash, files in white.
+     * 
+     * @param directoryName the path of the directory to list
+     * @return a formatted string of file and directory names
+     * @throws IllegalArgumentException if the directory does not exist or is invalid
+     * @throws UnknowException for any other file system errors
+     */
     @Override
     public String listFiles(Path directoryName) throws IllegalArgumentException, UnknowException {
-        /**
-         * List all files in the specified directory.
-         * directoryName: Path - the path of the directory to list files from
-         * return a formatted string of file names
-         * throws IllegalArgumentException if the directory does not exist
-         * throws UnknowException for any other errors
-         */
         if(directoryName == null) {
             throw new IllegalArgumentException("Directory name cannot be null");
         }
@@ -153,33 +163,35 @@ public class LocalFileRepository implements FileRepository {
     }
     }
 
+    /**
+     * Checks if the given path is a directory.
+     * 
+     * @param path the path to check
+     * @return true if the path is a directory, false otherwise
+     * @throws IllegalArgumentException if the path is null
+     */
     @Override
     public Boolean isDirectory(Path path) throws IllegalArgumentException {
-        /**
-         * Check if the given path is a directory.
-         * path: Path - the path to check
-         * return true if the path is a directory, false otherwise
-         * throws IllegalArgumentException if the path is null
-         */
         if(path == null) {
             throw new IllegalArgumentException("Path cannot be null");
         }
         return Files.isDirectory(path);
     }
 
+    /**
+     * Updates the content of a file.
+     * 
+     * @param directory the directory path containing the file
+     * @param filename the name of the file to update
+     * @param newContent the new content to write to the file
+     * @return the updated content of the file
+     * @throws FileNotFoundException if the file does not exist
+     * @throws FileNotReadableException if the file is not writable
+     * @throws IllegalArgumentException if the filename is invalid
+     * @throws UnknowException for any other file system errors
+     */
     @Override
     public String update(Path directory, String filename, String newContent) throws FileNotFoundException, FileNotReadableException, IllegalArgumentException, UnknowException {
-        /**
-         * Update the content of a file in the specified directory.
-         * directory: Path - the path of the directory where the file is located
-         * filename: String - the name of the file to be updated
-         * newContent: String - the new content to write to the file
-         * return the updated content of the file as a String
-         * throws FileNotFoundException if the file does not exist
-         * throws FileNotReadableException if the file is not readable
-         * throws IllegalArgumentException if the filename is invalid
-         * throws UnknowException for any other errors
-         */
         if(!java.nio.file.Files.exists(java.nio.file.Paths.get(directory.toString(), filename))) {
             throw new FileNotFoundException("File not found: " + filename);
         }
