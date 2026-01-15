@@ -5,6 +5,10 @@ import java.sql.SQLException;
 import application.WorkingContext;
 import application.UserService;
 
+/**
+ * Command line interface for the Secure File Manager application.
+ * Handles user input and executes file operations.
+ */
 public class CommandLineInterface {
 
     private WorkingContext context;
@@ -13,6 +17,11 @@ public class CommandLineInterface {
     private FileService fileService;
     private UserService userService;
 
+    /**
+     * Constructor initializes all required services.
+     * 
+     * @throws SQLException if database connection fails (system exits)
+     */
     public CommandLineInterface() {
         try {
             this.context = WorkingContext.getInstance("root_app");
@@ -27,6 +36,10 @@ public class CommandLineInterface {
         }
     }
     
+    /**
+     * Starts the main command loop of the application.
+     * Requires user authentication before proceeding.
+     */
     public void start() {
         // Check authentication first
         if (!ensureAuthentication()) {

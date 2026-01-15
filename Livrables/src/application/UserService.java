@@ -5,17 +5,31 @@ import infrastructures.security.CryptoService;
 import java.sql.SQLException;
 import java.util.Map;
 
+/**
+ * Service class for user authentication and management operations.
+ */
 public class UserService {
 
     private User userDatabase;
     private static UserService instance;
     private String currentUser;
 
+    /**
+     * Private constructor for singleton pattern.
+     * 
+     * @throws SQLException if database initialization fails
+     */
     private UserService() throws SQLException {
         this.userDatabase = User.getInstance();
         this.currentUser = null;
     }
 
+    /**
+     * Gets the singleton instance of UserService.
+     * 
+     * @return the UserService instance
+     * @throws SQLException if initialization fails
+     */
     public static synchronized UserService getInstance() throws SQLException {
         if (instance == null) {
             instance = new UserService();
