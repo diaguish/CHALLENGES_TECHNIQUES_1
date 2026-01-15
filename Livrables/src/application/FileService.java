@@ -199,6 +199,13 @@ public class FileService {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
+        } catch (HashException e) {
+            try {
+                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+            } catch (SQLException se) {
+                return "Hash error: " + e.getMessage() + " - Database error: " + se.getMessage();
+            }
+            return "Hash error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
                 journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());

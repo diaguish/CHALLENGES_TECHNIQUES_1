@@ -11,6 +11,8 @@ import java.io.*;
 import java.nio.file.*;
 import domain.model.Encrypt;
 import domain.exception.CryptoException;
+import domain.exception.HashException;
+import static java.lang.System.exit;
 
 public class CryptoService implements Encrypt {
     private static class ValueUtils {
@@ -133,10 +135,17 @@ public class CryptoService implements Encrypt {
      * @return The decrypted plaintext
      * @throws CryptoException
      */
-    public String decryptText(String value, String key) throws CryptoException {
+    public String decryptText(String value, String key) throws CryptoException, HashException {
         try {
             System.out.println("Decrypting value: " + value);
-            byte[] decode = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
+            byte[] decode = null;
+            try{
+                decode = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
+                System.out.println("Decoded bytes: " + Arrays.toString(decode));
+            } catch(IllegalArgumentException e){
+                throw new HashException("Invalid Base64 input for decryption: " + e.getMessage());
+            }
+            System.out.println("Decoded byte array length: " + decode.length);
             ByteBuffer bufferEncryptedText = ByteBuffer.wrap(decode);
             System.out.println("Buffer: " + Arrays.toString(bufferEncryptedText.array()));
 
@@ -152,6 +161,8 @@ public class CryptoService implements Encrypt {
             byte[] plainText = cipher.doFinal(cipherText);
             return new String(plainText, StandardCharsets.UTF_8);
         } catch (CryptoException e) {
+            throw e;
+        } catch (HashException e) {
             throw e;
         } catch (Exception e) {
             throw new CryptoException("Error decrypting text: " + e.getMessage());
