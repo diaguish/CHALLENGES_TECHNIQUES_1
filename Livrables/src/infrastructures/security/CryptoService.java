@@ -135,8 +135,10 @@ public class CryptoService implements Encrypt {
      */
     public String decryptText(String value, String key) throws CryptoException {
         try {
+            System.out.println("Decrypting value: " + value);
             byte[] decode = Base64.getDecoder().decode(value.getBytes(StandardCharsets.UTF_8));
             ByteBuffer bufferEncryptedText = ByteBuffer.wrap(decode);
+            System.out.println("Buffer: " + Arrays.toString(bufferEncryptedText.array()));
 
             byte[] iv = new byte[ValueUtils.IV_LENGTH_BYTE];
             bufferEncryptedText.get(iv);
