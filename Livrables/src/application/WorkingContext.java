@@ -7,55 +7,95 @@ import java.nio.file.Paths;
 import infrastructures.filesystem.LocalFileRepository;
 import infrastructures.database.Journalisation;
 import java.sql.SQLException;
+import application.UserService;
 
+/**
+ * Manages the working context (current directory) for file operations.
+ * Ensures that all operations stay within a designated root directory.
+ */
 public class WorkingContext {
 
     private final Path root;
     private Path current;
     private LocalFileRepository fileRepository = new LocalFileRepository();
     private Journalisation journalisation;
+    private static WorkingContext instance;
+    private static UserService userService;
 
-    public WorkingContext(String rootDirectory) throws SQLException {
-        /**
-         * Initialize the working context with a root directory. Sets the current directory to root.
-         * rootDirectory: String - the path of the root directory
-         */
+    /**
+     * Private constructor for singleton pattern.
+     * Initializes the working context with a root directory and sets the current directory to root.
+     * 
+     * @param rootDirectory the path of the root directory
+     * @throws SQLException if database initialization fails
+     */
+    private WorkingContext(String rootDirectory) throws SQLException {
         this.root = Paths.get(rootDirectory).toAbsolutePath().normalize();
         this.current = root;
         this.journalisation = Journalisation.getInstance();
+        userService = UserService.getInstance();
         
     }
 
-    private String formatPath(Path path) {
-    Path relative = root.relativize(path);
-    String rel = relative.toString().replace('\\', '/');
-    return rel.isEmpty() ? "/" : "/" + rel;
+    /**
+     * Gets the singleton instance of WorkingContext.
+     * 
+     * @param rootDirectory the root directory path
+     * @return the WorkingContext instance
+     * @throws SQLException if initialization fails
+     */
+    public static synchronized WorkingContext getInstance(String rootDirectory) throws SQLException {
+        if (instance == null) {
+            instance = new WorkingContext(rootDirectory);
+        }
+        return instance;
     }
 
-    public String displayPath(Path path) {
-    return formatPath(path);
-}
+    /**
+     * Formats a path relative to the root directory.
+     * 
+     * @param path the path to format
+     * @return the formatted relative path
+     */
+    private String formatPath(Path path) {
+        Path relative = root.relativize(path);
+        String rel = relative.toString().replace('\\', '/');
+        return rel.isEmpty() ? "/" : "/" + rel;
+    }
 
+    /**
+     * Gets the display representation of a path.
+     * 
+     * @param path the path to display
+     * @return the formatted path for display
+     */
+    public String displayPath(Path path) {
+        return formatPath(path);
+    }
+
+    /**
+     * Gets the current working directory relative to the root.
+     * Logs the PWD operation to the journalisation system.
+     * 
+     * @return the relative path as a string
+     */
     public String pwd() {
-        /**
-         * Get the current working directory relative to the root.
-         * return the relative path as a string
-         */
         try {
-            journalisation.createLog("system", "PWD", current.toString());
+            journalisation.createLog(userService.getCurrentUser(), "PWD", getCurrent().toString());
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         } 
         return formatPath(current);
     }
 
+    /**
+     * Resolves the input path against the current directory, ensuring it stays within the root.
+     * 
+     * @param input the input path to resolve
+     * @return the resolved Path
+     * @throws FileAccessException if the resolved path is outside the root
+     */
     public Path resolve(String input) {
-        /**
-         * Resolve the input path against the current directory, ensuring it stays within the root.
-         * input: String - the input path to resolve
-         * return the resolved Path
-         * throws FileAccessException if the resolved path is outside the root
-         */
         Path resolved = current.resolve(input).normalize();
         if (!resolved.startsWith(root)) {
             throw new FileAccessException("Sortie du répertoire autorisé interdite.");
@@ -63,22 +103,26 @@ public class WorkingContext {
         return resolved;
     }
 
+    /**
+     * Gets the current working directory as a Path object.
+     * 
+     * @return the current Path
+     */
     public Path getCurrent() {
-        /**
-        * Get the current working directory as a Path.
-        * return the current Path
-        */
         return current;
     }
 
+    /**
+     * Changes the current working directory based on the input.
+     * Supports ".", "..", and "/" navigation.
+     * Logs the CD operation to the journalisation system.
+     * 
+     * @param input the input path to change to
+     * @return success or error message
+     */
     public String changeDirectory(String input) {
-        /**
-        * Change the current working directory based on the input.
-        * input: String - the input path to change to
-        * return success or error message
-        */
         try {
-            journalisation.createLog("system", "CD", input);
+            journalisation.createLog(userService.getCurrentUser(), "CD", input);
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         }
@@ -105,14 +149,20 @@ public class WorkingContext {
             return "Changement de répertoire réussi.";
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "CD_FAILED", input);
+                journalisation.createLog(userService.getCurrentUser(), "CD_FAILED", input);
             } catch (SQLException se) {
                 return "Chemin invalide: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Chemin invalide: " + e.getMessage();
         }
     }
-        public Path getRoot() {
-            return root;
-        }
+    
+    /**
+     * Gets the root directory path.
+     * 
+     * @return the root Path
+     */
+    public Path getRoot() {
+        return root;
+    }
 }

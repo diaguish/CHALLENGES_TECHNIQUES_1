@@ -1,0 +1,10 @@
+unnamed package
+application
+cli
+domain.exception
+domain.model
+domain.repository
+infrastructures.database
+infrastructures.filesystem
+infrastructures.logging
+infrastructures.security

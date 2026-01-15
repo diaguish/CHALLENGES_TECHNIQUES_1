@@ -19,8 +19,8 @@ javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java") // po
 javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" (Get-ChildItem -Recurse src -Filter *.java | ForEach-Object { $_.FullName })  // Powershell windows
 Exécution
 ```bash
-java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main // pour Linux
-java -cp "bin;src/sqlite-jdbc-3.51.1.0.jar" Main // Powershell windows
+java --enable-native-access=ALL-UNNAMED -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main // pour Linux
+java --enable-native-access=ALL-UNNAMED -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main // Powershell windows
 ```
 ## Commandes disponibles (Itération 1)
 
