@@ -26,6 +26,12 @@ public class WorkingContext {
         
     }
 
+    private String formatPath(Path path) {
+    Path relative = root.relativize(path);
+    String rel = relative.toString().replace('\\', '/');
+    return rel.isEmpty() ? "/" : "/" + rel;
+    }
+
     public String pwd() {
         /**
          * Get the current working directory relative to the root.
@@ -35,9 +41,8 @@ public class WorkingContext {
             journalisation.createLog("system", "PWD", current.toString());
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
-        }
-        Path relative = root.relativize(current);
-        return relative.toString().isEmpty() ? "/" : "/" + relative;
+        } 
+        return formatPath(current);
     }
 
     public Path resolve(String input) {
