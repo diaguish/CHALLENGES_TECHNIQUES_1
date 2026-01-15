@@ -69,7 +69,7 @@ public class FileService {
             filePassword.createFilePassword(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename, currentUser, keyAndSalt[1]);
 
             repository.create(directory, filename);
-            journalisation.createLog("system", "CREATE", directory.resolve(filename).toString());
+            journalisation.createLog(userService.getCurrentUser(), "CREATE", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             if (integrityEnabled()) {
             Path filePath = directory.resolve(filename).normalize();
             String hash = hashService.sha256(filePath);
@@ -79,14 +79,14 @@ public class FileService {
             return "File created successfully";
         } catch (FileAlreadyExistsException e) {
             try {
-                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Cannot create file: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Cannot create file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -97,7 +97,7 @@ public class FileService {
             return "IO error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "CREATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -118,7 +118,7 @@ public class FileService {
         if ("DELETED".equals(last.hash)) {
     // Si l'historique dit "supprimé", alors le fichier ne devrait plus exister
     if (Files.exists(filePath)) {
-        journalisation.createLog("system", "INTEGRITY_MISMATCH", filePath.toString());
+        journalisation.createLog(userService.getCurrentUser(), "INTEGRITY_MISMATCH", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
         return "Integrite compromise : fichier present alors qu'il est marque supprime.";
     }
     return null; // ok: il est bien absent
@@ -130,7 +130,7 @@ public class FileService {
 
         boolean ok = last.hash.equals(currentHash) && last.size == currentSize;
         if (!ok) {
-            journalisation.createLog("system", "INTEGRITY_MISMATCH", filePath.toString());
+            journalisation.createLog(userService.getCurrentUser(), "INTEGRITY_MISMATCH", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             return "⚠️ Intégrité compromise : le fichier a été modifié hors application.";
         }
 
@@ -164,32 +164,32 @@ public class FileService {
             }
 
             repository.delete(directory, filename);
-            journalisation.createLog("system", "DELETE", directory.resolve(filename).toString());
+            journalisation.createLog(userService.getCurrentUser(), "DELETE", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             return "File deleted successfully";
         } catch (FileNotFoundException e) {
             try {
-                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "DELETE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Cannot delete file: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Cannot delete file: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "DELETE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             try {
-                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "DELETE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "DELETE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "DELETE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -224,46 +224,46 @@ public class FileService {
             String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
 
             String decryptedContent = cryptoService.decryptText(ret, keyAndSalt[0]);
-            journalisation.createLog("system", "READ", directory.resolve(filename).toString());
+            journalisation.createLog(userService.getCurrentUser(), "READ", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             return decryptedContent;
         } catch (FileNotFoundException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Cannot read file: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Cannot read file: " + e.getMessage();
         } catch (FileNotReadableException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "File not readable: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
         } catch (HashException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Hash error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Hash error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "READ_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "READ_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -280,32 +280,32 @@ public class FileService {
         */
         try {
             repository.createRepository(directory, directoryName);
-            journalisation.createLog("system", "CREATE_REPO", directory.resolve(directoryName).toString());
+            journalisation.createLog(userService.getCurrentUser(), "CREATE_REPO", workingContext.displayPath(workingContext.getCurrent()) + "/" + directoryName);
             return "Repository created successfully";
         } catch (FileAlreadyExistsException e) {
             try {
-                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_REPO_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + directoryName);
             } catch (SQLException se) {
                 return "Cannot create repository: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Cannot create repository: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_REPO_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + directoryName);
             } catch (SQLException se) {
                 return "Invalid directory name: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Invalid directory name: " + e.getMessage();
         } catch (SQLException e) {
             try {
-                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_REPO_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + directoryName);
             } catch (SQLException se) {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "CREATE_REPO_FAILED", directory.resolve(directoryName).toString());
+                journalisation.createLog(userService.getCurrentUser(), "CREATE_REPO_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + directoryName);
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -321,26 +321,26 @@ public class FileService {
         */
         try {
             String ret = getInstance().repository.listFiles(directoryPath);
-            journalisation.createLog("system", "LIST_FILES", directoryPath.toString());
+            journalisation.createLog(userService.getCurrentUser(), "LIST_FILES", workingContext.displayPath(workingContext.getCurrent()));
             return ret;
 
         }catch (SQLException e) {
             try {
-                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+                journalisation.createLog(userService.getCurrentUser(), "LIST_FILES_FAILED", workingContext.displayPath(workingContext.getCurrent()));
             } catch (SQLException se) {
                 return "Database error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Database error: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+                journalisation.createLog(userService.getCurrentUser(), "LIST_FILES_FAILED", workingContext.displayPath(workingContext.getCurrent()));
             } catch (SQLException se) {
                 return "Invalid directory: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Invalid directory: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "LIST_FILES_FAILED", directoryPath.toString());
+                journalisation.createLog(userService.getCurrentUser(), "LIST_FILES_FAILED", workingContext.displayPath(workingContext.getCurrent()));
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
@@ -357,7 +357,7 @@ public class FileService {
         * return success or error message
         */
         try {
-            Map<String, Object> filePass = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString());
+            Map<String, Object> filePass = filePassword.getFilePasswordByFilename(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             String owner = filePass.get("user").toString();
             String salt = filePass.get("salt").toString();
             if (owner == null || !userService.getCurrentUser().equals(owner)) {
@@ -370,7 +370,7 @@ public class FileService {
             String encryptedContent = cryptoService.encryptText(newContent, keyAndSalt[0]);
 
             String ret = repository.update(directory, filename, encryptedContent);
-            journalisation.createLog("system", "UPDATE", directory.resolve(filename).toString());
+            journalisation.createLog(userService.getCurrentUser(), "UPDATE", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             if (integrityEnabled()) {
             Path filePath = directory.resolve(filename).normalize();
                 String hash = hashService.sha256(filePath);
@@ -380,35 +380,35 @@ public class FileService {
             return ret;
         } catch (FileNotFoundException e) {
             try {
-                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "UPDATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Cannot update file: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Cannot update file: " + e.getMessage();
         } catch (FileNotReadableException e) {
             try {
-                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "UPDATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "File not readable: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "File not readable: " + e.getMessage();
         } catch (IllegalArgumentException e) {
             try {
-                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "UPDATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Invalid filename: " + e.getMessage() + " - Database error: " + se.getMessage();
             }
             return "Invalid filename: " + e.getMessage();
         } catch (SQLException e) {
             try {
-                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "UPDATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 // Log error silently
             }
             return "Database error: " + e.getMessage();
         } catch (UnknowException e) {
             try {
-                journalisation.createLog("system", "UPDATE_FAILED", directory.resolve(filename).toString());
+                journalisation.createLog(userService.getCurrentUser(), "UPDATE_FAILED", workingContext.displayPath(workingContext.getCurrent()) + "/" + filename);
             } catch (SQLException se) {
                 return "Unknown error: " + e.getMessage() + " - Database error: " + se.getMessage();
             }

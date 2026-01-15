@@ -7,6 +7,7 @@ import java.nio.file.Paths;
 import infrastructures.filesystem.LocalFileRepository;
 import infrastructures.database.Journalisation;
 import java.sql.SQLException;
+import application.UserService;
 
 public class WorkingContext {
 
@@ -15,6 +16,7 @@ public class WorkingContext {
     private LocalFileRepository fileRepository = new LocalFileRepository();
     private Journalisation journalisation;
     private static WorkingContext instance;
+    private static UserService userService;
 
     /**
      * Initialize the working context with a root directory. Sets the current directory to root.
@@ -24,6 +26,7 @@ public class WorkingContext {
         this.root = Paths.get(rootDirectory).toAbsolutePath().normalize();
         this.current = root;
         this.journalisation = Journalisation.getInstance();
+        userService = UserService.getInstance();
         
     }
 
@@ -50,7 +53,7 @@ public class WorkingContext {
          * return the relative path as a string
          */
         try {
-            journalisation.createLog("system", "PWD", current.toString());
+            journalisation.createLog(userService.getCurrentUser(), "PWD", getCurrent().toString());
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         } 
@@ -86,7 +89,7 @@ public class WorkingContext {
         * return success or error message
         */
         try {
-            journalisation.createLog("system", "CD", input);
+            journalisation.createLog(userService.getCurrentUser(), "CD", input);
         } catch (SQLException e) {
             return "Database error: " + e.getMessage();
         }
