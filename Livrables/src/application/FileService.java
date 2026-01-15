@@ -182,6 +182,7 @@ public class FileService {
      * @return success or error message
      */
     public String deleteFile(Path directory, String filename) {
+        try {
             String integrityError = checkIntegrity(directory, filename);
             if (integrityError != null) {
                 return integrityError;

@@ -19,8 +19,7 @@ public class CommandLineInterface {
 
     /**
      * Constructor initializes all required services.
-     * 
-     * @throws SQLException if database connection fails (system exits)
+     * Exits the program if database connection fails.
      */
     public CommandLineInterface() {
         try {
