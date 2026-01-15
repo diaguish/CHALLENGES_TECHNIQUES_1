@@ -1,93 +1,106 @@
-# Challenges_techniques_1
+# Secure File Manager (CLI) – Java
 
+## Contexte
+Ce projet consiste à développer un **gestionnaire de fichiers sécurisé en ligne de commande (CLI)** en Java, sans interface graphique.  
+Le développement est réalisé de manière **itérative**, avec des fonctionnalités ajoutées à chaque itération.
+Développement itératif :
+- Itération 1 : CRUD + navigation dans un répertoire autorisé + erreurs + CLI
+- Itération 2 : intégrité (hash) + traçabilité (logs)
+- Itération 3 : chiffrement + gestion des clés
 
+## Prérequis
+- Java 17+
 
-## Getting started
+## Compilation
+Depuis le dossier `Livrables` :
+```bash
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" $(find src -name "*.java") // pour Linux
 
-To make it easy for you to get started with GitLab, here's a list of recommended next steps.
-
-Already a pro? Just edit this README.md and make it your own. Want to make it easy? [Use the template at the bottom](#editing-this-readme)!
-
-## Add your files
-
-- [ ] [Create](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#create-a-file) or [upload](https://docs.gitlab.com/ee/user/project/repository/web_editor.html#upload-a-file) files
-- [ ] [Add files using the command line](https://docs.gitlab.com/topics/git/add_files/#add-files-to-a-git-repository) or push an existing Git repository with the following command:
-
+javac -d bin -cp "src/sqlite-jdbc-3.51.1.0.jar" (Get-ChildItem -Recurse src -Filter *.java | ForEach-Object { $_.FullName })  // Powershell windows
+Exécution
+```bash
+java -cp "bin:src/sqlite-jdbc-3.51.1.0.jar" Main // pour Linux
+java -cp "bin;src/sqlite-jdbc-3.51.1.0.jar" Main // Powershell windows
 ```
-cd existing_repo
-git remote add origin https://gitlab.esiea.fr/esteban.debroise/challenges_techniques_1.git
-git branch -M main
-git push -uf origin main
-```
+## Commandes disponibles (Itération 1)
 
-## Integrate with your tools
+help : affiche l’aide
+pwd : affiche le répertoire courant (relatif au root autorisé)
+ls : liste les fichiers et dossiers
+cd <dossier> : se déplacer dans un sous-dossier
+create <fichier> : créer un fichier
+read <fichier> : lire le contenu d’un fichier
+write <fichier> : écrire ou modifier un fichier
+delete <fichier> : supprimer un fichier
+exit : quitter l’application
 
-- [ ] [Set up project integrations](https://gitlab.esiea.fr/esteban.debroise/challenges_techniques_1/-/settings/integrations)
+## Gestion du périmètre autorisé
 
-## Collaborate with your team
+L’application fonctionne dans un répertoire racine autorisé défini au lancement.
+Toute tentative de sortie de ce périmètre (ex : ../) est bloquée afin de garantir la sécurité du système de fichiers.
 
-- [ ] [Invite team members and collaborators](https://docs.gitlab.com/ee/user/project/members/)
-- [ ] [Create a new merge request](https://docs.gitlab.com/ee/user/project/merge_requests/creating_merge_requests.html)
-- [ ] [Automatically close issues from merge requests](https://docs.gitlab.com/ee/user/project/issues/managing_issues.html#closing-issues-automatically)
-- [ ] [Enable merge request approvals](https://docs.gitlab.com/ee/user/project/merge_requests/approvals/)
-- [ ] [Set auto-merge](https://docs.gitlab.com/user/project/merge_requests/auto_merge/)
 
-## Test and Deploy
+## Gestion des erreurs
 
-Use the built-in continuous integration in GitLab.
+Les erreurs courantes sont prises en compte :
+- fichier ou dossier inexistant,
+- permissions insuffisantes,
+- commande invalide,
+- tentative d’accès hors du répertoire autorisé.
+Les messages affichés à l’utilisateur sont clairs et l’application ne s’arrête pas brutalement.
 
-- [ ] [Get started with GitLab CI/CD](https://docs.gitlab.com/ee/ci/quick_start/)
-- [ ] [Analyze your code for known vulnerabilities with Static Application Security Testing (SAST)](https://docs.gitlab.com/ee/user/application_security/sast/)
-- [ ] [Deploy to Kubernetes, Amazon EC2, or Amazon ECS using Auto Deploy](https://docs.gitlab.com/ee/topics/autodevops/requirements.html)
-- [ ] [Use pull-based deployments for improved Kubernetes management](https://docs.gitlab.com/ee/user/clusters/agent/)
-- [ ] [Set up protected environments](https://docs.gitlab.com/ee/ci/environments/protected_environments.html)
+## Architecture du projet
 
-***
+L'application est structurée en 4 modules :
 
-# Editing this README
+### CLI
+Le module CLI (Command Line Interface) est responsable de l'interaction entre l'utilisateur et l'application. Il permet à l'utilisateur d'exécuter des commandes pour gérer des fichiers de manière sécurisée. **Aucun traitement métier n'y est effectué**. Voici les principales classes et fonctionnalités de ce module :
 
-When you're ready to make this README your own, just edit this file and use the handy template below (or feel free to structure it however you want - this is just a starting point!). Thanks to [makeareadme.com](https://www.makeareadme.com/) for this template.
+#### CommandLineInterface
+Cette classe gère l'interface en ligne de commande. Elle initialise les services nécessaires, comme `FileService` pour la gestion des fichiers et `WorkingContext` pour maintenir le contexte de travail actuel. La méthode `start()` lance la boucle principale de l'application, où l'utilisateur peut entrer des commandes.
 
-## Suggestions for a good README
+- **Fonctionnalités :**
+    - Affichage d'un message de bienvenue et d'aide via `MenuRenderer`.
+    - Lecture des entrées utilisateur et traitement des commandes.
+    -
 
-Every project is different, so consider which of these sections apply to yours. The sections used in the template are suggestions for most open source projects. Also keep in mind that while a README can be too long and detailed, too long is better than too short. If you think your README is too long, consider utilizing another form of documentation rather than cutting out information.
+#### MenuRenderer
+Cette classe est responsable de l'affichage des messages à l'utilisateur. Elle fournit des méthodes statiques pour afficher le message de bienvenue et l'aide.
 
-## Name
-Choose a self-explaining name for your project.
+### Application
+Le module Application est le cœur de l'application, orchestrant les différentes fonctionnalités et cas d'utilisation. Il interagit avec les modules CLI et Infrastructure(via le Domain).
 
-## Description
-Let people know what your project can do specifically. Provide context and add a link to any reference visitors might be unfamiliar with. A list of Features or a Background subsection can also be added here. If there are alternatives to your project, this is a good place to list differentiating factors.
+#### FileService
+Cette classe gère les opérations liées aux fichiers, telles que la création, la suppression et la lecture de fichiers. Elle utilise le module Domaine pour appliquer les règles de gestion et garantir l'intégrité des opérations.
 
-## Badges
-On some READMEs, you may see small images that convey metadata, such as whether or not all the tests are passing for the project. You can use Shields to add some to your README. Many services also have instructions for adding a badge.
+- **Fonctionnalités :**
+    - `createFile(String filename)` : Crée un nouveau fichier avec le nom spécifié.
+    - `deleteFile(String filename)` : Supprime le fichier spécifié.
+    - `readFile(String filename)` : Lit le contenu du fichier spécifié.
+    - `createRepository(String directoryName)` : Crée un nouveau répertoire pour organiser les fichiers.
 
-## Visuals
-Depending on what you are making, it can be a good idea to include screenshots or even a video (you'll frequently see GIFs rather than actual videos). Tools like ttygif can help, but check out Asciinema for a more sophisticated method.
+#### WorkingContext
+Cette classe maintient le contexte de travail actuel de l'utilisateur, en s'assurant qu'il reste dans le répertoire autorisé. Elle transforme les entrées de l'utilisateur en chemins sûrs et gère les déplacements dans le système de fichiers.
 
-## Installation
-Within a particular ecosystem, there may be a common way of installing things, such as using Yarn, NuGet, or Homebrew. However, consider the possibility that whoever is reading your README is a novice and would like more guidance. Listing specific steps helps remove ambiguity and gets people to using your project as quickly as possible. If it only runs in a specific context like a particular programming language version or operating system or has dependencies that have to be installed manually, also add a Requirements subsection.
+- **Fonctionnalités :**
+    - `pwd()` : Affiche le répertoire courant.
+    - `resolve(String input)` : Résout un chemin d'entrée en un chemin sûr.
+    - `moveTo(Path newPath)` : Déplace le contexte de travail vers un nouveau chemin.
 
-## Usage
-Use examples liberally, and show the expected output if you can. It's helpful to have inline the smallest example of usage that you can demonstrate, while providing links to more sophisticated examples if they are too long to reasonably include in the README.
+Ce module assure que toutes les opérations de fichiers sont effectuées dans un cadre sécurisé, respectant les principes de la triade CIA.
 
-## Support
-Tell people where they can go to for help. It can be any combination of an issue tracker, a chat room, an email address, etc.
+### Domaine
+Définit les entités métier, les règles de gestion et la logique métier fondamentale.
+Dans se dossier il n'y a pas vraiment de code, c'est un dossier où tout est défini, il ne dépend de personne mais l'infrastructure et l'application l'utilise pour comuniquer entre eux
 
-## Roadmap
-If you have ideas for releases in the future, it is a good idea to list them in the README.
+### Infrastructure
+c'est l'endroit où tout les accée vers l'exterieur sont réèlement fait, l'application appelle ces méthode via le domaine 
 
-## Contributing
-State if you are open to contributions and what your requirements are for accepting them.
 
-For people who want to make changes to your project, it's helpful to have some documentation on how to get started. Perhaps there is a script that they should run or some environment variables that they need to set. Make these steps explicit. These instructions could also be useful to your future self.
+## Journalisation
 
-You can also document commands to lint the code or run tests. These steps help to ensure high code quality and reduce the likelihood that the changes inadvertently break something. Having instructions for running tests is especially helpful if it requires external setup, such as starting a Selenium server for testing in a browser.
-
-## Authors and acknowledgment
-Show your appreciation to those who have contributed to the project.
-
-## License
-For open source projects, say how it is licensed.
-
-## Project status
-If you have run out of energy or time for your project, put a note at the top of the README saying that development has slowed down or stopped completely. Someone may choose to fork your project or volunteer to step in as a maintainer or owner, allowing your project to keep going. You can also make an explicit request for maintainers.
+Pour chaque action faite sur l'application (CRUD, erreur, ...) je stock :
+La date exacte de l'action
+Quel utilisateur à fait l'action
+Quel est l'action
+Quel fichier est touché par l'action
