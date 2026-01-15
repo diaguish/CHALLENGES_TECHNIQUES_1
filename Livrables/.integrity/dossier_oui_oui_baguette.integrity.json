@@ -1,0 +1,10 @@
+{
+  "path": "dossier/oui_oui_baguette",
+  "entries": [
+    { "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "timestamp": "2026-01-15T23:37:48.780910776", "size": 0 }
+  ,
+    { "hash": "680a6668b0df02393cb9bd986b7ff751364a62617a244a6a9ddf4e0aab356045", "timestamp": "2026-01-15T23:38:14.719958051", "size": 60 }
+  ,
+    { "hash": "DELETED", "timestamp": "2026-01-15T23:38:33.719371210", "size": 0 }
+  ]
+}

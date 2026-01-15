@@ -192,7 +192,7 @@ public class FileService {
                 integrityStore.appendDeleteEvent(filePath);
             }
              
-            String Owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            String Owner = filePassword.getFilePasswordByFilename(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename).get("user").toString();
             if (Owner == null || !userService.getCurrentUser().equals(Owner)) {
                 return "Cannot delete file: current user is not the owner";
             }
@@ -246,7 +246,7 @@ public class FileService {
                 return integrityError;
             }   
 
-            String owner = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("user").toString();
+            String owner = filePassword.getFilePasswordByFilename(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename).get("user").toString();
             if (owner == null || !userService.getCurrentUser().equals(owner)) {
                 return "Cannot read file: current user is not the owner";
             }
@@ -255,7 +255,7 @@ public class FileService {
             CryptoService cryptoService = new CryptoService();
             String currentUser = userService.getCurrentUser();
             String userHashedPassword = userDatabase.getUserByUser(currentUser).get("password").toString();
-            String salt = filePassword.getFilePasswordByFilename(directory.resolve(filename).toString()).get("salt").toString();
+            String salt = filePassword.getFilePasswordByFilename(workingContext.displayPath(workingContext.getCurrent()) + "/" + filename).get("salt").toString();
             String[] keyAndSalt = cryptoService.generateKey(userHashedPassword, salt);
 
             String decryptedContent = cryptoService.decryptText(ret, keyAndSalt[0]);
