@@ -1,1 +1,4 @@
 bin/
+.integrity/
+javadoc/
+root_app/
