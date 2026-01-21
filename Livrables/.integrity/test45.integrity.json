@@ -1,8 +1,0 @@
-{
-  "path": "test45",
-  "entries": [
-    { "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "timestamp": "2026-01-15T13:15:21.415257137", "size": 0 }
-  ,
-    { "hash": "3753cfb2aa3573c2c3907a6f13e5125fa8ae070a83fa1018951a48814b24c81e", "timestamp": "2026-01-15T13:15:29.823158568", "size": 48 }
-  ]
-}

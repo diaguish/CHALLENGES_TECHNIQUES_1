@@ -1,8 +1,0 @@
-{
-  "path": "dossier1/encore/1test",
-  "entries": [
-    { "hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855", "timestamp": "2026-01-15T10:49:38.862731100", "size": 0 }
-  ,
-    { "hash": "2dc5f15625fb1ee22df15e10451243026ecb4faf3ce1d187ffbe71e934a14949", "timestamp": "2026-01-15T10:50:51.979098200", "size": 16 }
-  ]
-}
